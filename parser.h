@@ -17,6 +17,7 @@ int  yylex(void);
 void yyerror (char  *);
 symrec *putsym ();
 symrec *getsym ();
+char *gen_code(char *exp1, char *exp2, int opt);
 
 typedef struct StmtsNode *stmtsptr;
 typedef struct StmtNode *stmtptr;

@@ -108,7 +108,29 @@ if_stmt:
        }
        ;
 
+// t0 will always have exp
 exp:
+   x{
+   sprintf($$, "%s", $1);
+   count ^= 1;
+   }
+   |
+   exp '+' exp{
+   $$ = gen_exp($1, $3, 1);
+   }
+   |
+   exp '-' exp{
+   $$ = gen_exp($1, $3, 2);
+   }
+   |
+   exp '*' exp{
+   $$ = gen_exp($1, $3, 3);
+   }
+   |
+   exp '/' exp{
+   $$ = gen_exp($1, $3, 4);
+   }
+   ;
 
 
 %%
