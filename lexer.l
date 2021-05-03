@@ -24,6 +24,8 @@ id {letter}({letter}|{digit})*
 "else" {return ELSE;}
 "for" {return FOR;}
 "while" {return WHILE;}
+"true" {return TRUE;}
+"false" {return FALSE;}
 {id} {symrec *s;s=getsym(yytext); if(s==0) s=putsym(yytext,VAR); yylval.tptr=s; return VAR;}
 ";" {return SEMICOLON;}
 ":=" {return DEFINE;}

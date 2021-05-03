@@ -23,6 +23,7 @@ struct StmtsNode *stmtsptr;
 }
 
 %token LBRACE RBRACE LPAREN RPAREN
+%token TRUE FALSE
 %token  <val> NUM        /* Integer   */
 %token <val> RELOP
 %token  WHILE IF ELSE
@@ -108,6 +109,18 @@ if_stmt:
        }
        ;
 
+// t0 will store the computed value
+bool_exp:
+        TRUE{
+        sprintf($$, "%s", "li $t0, 1\n");
+        }
+        |
+        FALSE{
+        sprintf($$, "%s", "li $t0, 0\n");
+        }
+        ;
+
+
 // t0 will always have exp
 exp:
    x{
@@ -132,6 +145,16 @@ exp:
    }
    ;
 
+x:
+ NUM{
+ sprintf($$, "li $t%d, %d", count, $1);
+ count ^= 1;
+ }
+ |VAR{
+ sprintf($$, "lw $t%d, %s($t8)", count, $1->addr);
+ count ^= 1;
+ }
+ ;
 
 %%
 
