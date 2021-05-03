@@ -13,6 +13,8 @@ typedef struct symrec symrec;
 /* The symbol table: a chain of `struct symrec'.     */
 extern symrec *sym_table;
 
+int  yylex(void);
+void yyerror (char  *);
 symrec *putsym ();
 symrec *getsym ();
 
@@ -28,12 +30,14 @@ typedef struct StmtNode *stmtptr;
 
 
 
+int whileStart = 0, End = 0, elseStart = 0;
 struct StmtNode{
-   int isWhile;
-   char initCode[100];
-   char initJumpCode[20];
-   char bodyCode[1000]; // assgnCode[1000];
-   struct StmtsNode *down;
+   int type;
+   char JumpCode[20];
+   char assgnCode[1000];
+   struct StmtsNode *while_body;
+   struct StmtsNode *if_body;
+   struct StmtsNode *else_body;
 };
 
 
