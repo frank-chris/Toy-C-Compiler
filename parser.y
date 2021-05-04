@@ -110,27 +110,29 @@ assign_stmt:
            }
            ;
 
-while_stmt:
-          WHILE LPAREN bool_exp RPAREN LBRACE stmts RBRACE{
-          $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
-          $$ -> type = 2; // type = 2 for while
-          sprintf($$ -> JumpCode, "beq $t0, 1,"); // Branch if the value computed at bool_exp(t0) is 1. Where to, we will decide labels later
-          $$ -> while_body = $6;
-          $$ -> if_body = NULL;
-          $$ -> else_body = NULL;
-          }
-          ;
-
 if_stmt:
        IF LPAREN bool_exp RPAREN LBRACE stmts RBRACE ELSE LBRACE stmts RBRACE{
        $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
        $$ -> type = 1; // type = 1 for if else
+       sprintf($$ -> InitCode,"%s", $3);
        sprintf($$ -> JumpCode, "beqz $t0,"); // Branch to else part
        $$ -> while_body = NULL;
        $$ -> if_body = $6;
        $$ -> else_body = $10;
        }
        ;
+
+while_stmt:
+          WHILE LPAREN bool_exp RPAREN LBRACE stmts RBRACE{
+          $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
+          $$ -> type = 2; // type = 2 for while
+          sprintf($$ -> InitCode,"%s", $3);
+          sprintf($$ -> JumpCode, "beqz $t0,"); // Branch if the value computed at bool_exp(t0) is 1. Where to, we will decide labels later
+          $$ -> while_body = $6;
+          $$ -> if_body = NULL;
+          $$ -> else_body = NULL;
+          }
+          ;
 
 // t0 will store the computed value
 // INCOMPLETE
@@ -210,6 +212,7 @@ void StmtTrav(stmtptr ptr){
         elseStart++;
         nj = End;
         End++;
+        fprintf(fp, "%s \n", ptr->InitCode);
         fprintf(fp, "%s Else%d\n", ptr->JumpCode, nj);
         StmtsTrav(ptr -> if_body);
         fprintf(fp, "j End%d\nElse%d:\n", nj, es);
@@ -221,6 +224,7 @@ void StmtTrav(stmtptr ptr){
         whileStart++;
         nj = End;
         End++;
+        fprintf(fp, "%s \n", ptr->InitCode);
         fprintf(fp, "While%d:\n%s End%d\n", ws, ptr->JumpCode, nj);
         StmtsTrav(ptr -> while_body);
         fprintf(fp, "j While%d\nEnd%d:\n", ws, nj);

@@ -34,6 +34,7 @@ typedef struct StmtNode *stmtptr;
 
 struct StmtNode{
    int type;
+   char InitCode[100];
    char JumpCode[2000];
    char assgnCode[1000];
    struct StmtsNode *while_body;
