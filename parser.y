@@ -47,7 +47,7 @@ struct StmtsNode *stmtsptr;
 %type <nData> x
 %type <stmtsptr> stmts
 %type <stmtptr> stmt
-%type <stmtptr> assign_stmt print_stmt if_stmt while_stmt
+%type <stmtptr> assign_stmt print_stmt scan_stmt if_stmt while_stmt
 
 %right ASSIGN
 %left MINUS PLUS
@@ -88,6 +88,10 @@ stmt:
     $$ = $1;
     }
     |
+    scan_stmt SEMICOLON{
+    $$ = $1;
+    }
+    |
     print_stmt SEMICOLON{
     $$ = $1;
     }
@@ -116,10 +120,19 @@ assign_stmt:
            }
            ;
 
+scan_stmt:
+         SCAN LPAREN VAR RPAREN{
+         // Don't use the code returned by VAR
+         count = 0; // We have to set count back to 0
+         $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
+         $$ -> type = 4; // type = 4 for scan
+         sprintf($$ -> scanCode, "\njal Scan \nsw $t0, %s($t8)", $3 -> addr);
+         }
+
 print_stmt:
           PRINT exp{
           $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
-          $$ -> type = 3; // type = 3 for assignment
+          $$ -> type = 3; // type = 3 for print
           sprintf($$ -> printCode, "%s \njal Print \n", $2);
           }
 
@@ -193,8 +206,9 @@ x:
  sprintf($$, "li $t%d, %d", count, $1);
  count ^= 1;
  }
- |VAR{
- sprintf($$, "lw $t%d, %s($t8)", count, $1->addr);
+ |
+ VAR{
+ sprintf($$, "lw $t%d, %s($t8)", count, $1 -> addr);
  count ^= 1;
  }
  ;
@@ -246,6 +260,9 @@ void StmtTrav(stmtptr ptr){
     else if(ptr -> type == 3){
         fprintf(fp, "%s\n",ptr -> printCode);
     }
+    else if(ptr -> type == 4){
+        fprintf(fp, "%s\n",ptr -> scanCode);
+    }
 }
 
 
@@ -255,7 +272,8 @@ int main ()
     sym_table = (symrec *)0;
     fp=fopen("asmb.asm","w");
     fprintf(fp, ".data\n\n.text\nli $t8,268500992\n");
-    fprintf(fp, "j PrintEnd \nPrint: \nli $v0, 1 \nmove $a0, $t0 \nsyscall \njr $ra \nPrintEnd: \n");
+    fprintf(fp, "\nj PrintEnd \nPrint: \nli $v0, 1 \nmove $a0, $t0 \nsyscall \njr $ra \nPrintEnd: \n");
+    fprintf(fp, "\nj ScanEnd \nScan: \nli $v0, 5 \nsyscall \nmove $t0, $v0 \njr $ra \nScanEnd: \n");
     yyparse ();
     StmtsTrav(final);
     fprintf(fp,"\nli $v0,10\nsyscall\n");
