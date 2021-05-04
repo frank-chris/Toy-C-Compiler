@@ -20,12 +20,12 @@ id {letter}({letter}|{digit})*
 "}" {printf("RBRACE\n");return RBRACE;}
 "(" {printf("LPAREN\n");return LPAREN;}
 ")" {printf("RPAREN\n");return RPAREN;}
-"if" {return IF;}
-"else" {return ELSE;}
-"for" {return FOR;}
-"while" {return WHILE;}
-"true" {return TRUE;}
-"false" {return FALSE;}
+"if" {printf("IF\n");return IF;}
+"else" {printf("ELSE\n");return ELSE;}
+"for" {printf("FOR\n");return FOR;}
+"while" {printf("WHILE\n");return WHILE;}
+"true" {printf("TRUE\n");return TRUE;}
+"false" {printf("FALSE\n");return FALSE;}
 {id} {printf("ID\n");symrec *s;s=getsym(yytext); if(s==0) s=putsym(yytext,VAR); yylval.tptr=s; return VAR;}
 {number} {printf("NUM\n"); sscanf(yytext,"%d",&yylval.val); return NUM;}
 ";" {printf("SEMICOLON\n");return SEMICOLON;}
