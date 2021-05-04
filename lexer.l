@@ -45,7 +45,7 @@ id {letter}({letter}|{digit})*
 "-" {printf("MINUS\n"); yylval.arithmetic_type=11; return ARITHMETIC;}
 "*" {printf("TIMES\n"); yylval.arithmetic_type=12; return ARITHMETIC;}
 "/" {printf("DIVIDE\n"); yylval.arithmetic_type=13; return ARITHMETIC;}
-"%" {printf("MODULUS\n"); yylval.arithmetic_type=13; return ARITHMETIC;}
+"%" {printf("MODULUS\n"); yylval.arithmetic_type=14; return ARITHMETIC;}
 
 [ \n\t] {}
 . {printf("error:Character %s\n",yytext);exit(0);}

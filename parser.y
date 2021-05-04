@@ -152,12 +152,11 @@ bool_exp:
         }
         |
         exp RELATIONAL exp{
-        printf("%d\n", $2);
         sprintf($$, "%s", gen_code($1, $3, $2));
         }
         |
         bool_exp LOGICAL bool_exp{
-
+        sprintf($$, "%s", gen_code($1, $3, $2));
         }
         ;
 
@@ -227,8 +226,9 @@ void StmtTrav(stmtptr ptr){
         whileStart++;
         nj = End;
         End++;
+        fprintf(fp, "While%d:\n", ws);
         fprintf(fp, "%s \n", ptr->InitCode);
-        fprintf(fp, "While%d:\n%s End%d\n", ws, ptr->JumpCode, nj);
+        fprintf(fp, "%s End%d\n", ptr->JumpCode, nj);
         StmtsTrav(ptr -> while_body);
         fprintf(fp, "j While%d\nEnd%d:\n", ws, nj);
     }
