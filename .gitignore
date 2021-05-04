@@ -1,5 +1,3 @@
-./Pascal/
-
 # Prerequisites
 *.d
 
@@ -52,3 +50,8 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+lex.yy.c
+*.tab.c
+*.tab.h
+*.asm
+./Pascal/*
