@@ -32,6 +32,7 @@ struct StmtsNode *stmtsptr;
 %token LBRACE RBRACE LPAREN RPAREN
 %token TRUE FALSE
 %token  WHILE IF ELSE FOR
+%token SCAN PRINT
 %token SEMICOLON
 %token ASSIGN DEFINE
 %token AND OR
@@ -46,7 +47,7 @@ struct StmtsNode *stmtsptr;
 %type <nData> x
 %type <stmtsptr> stmts
 %type <stmtptr> stmt
-%type <stmtptr> assign_stmt if_stmt while_stmt
+%type <stmtptr> assign_stmt print_stmt if_stmt while_stmt
 
 %right ASSIGN
 %left MINUS PLUS
@@ -64,7 +65,6 @@ prog:
     stmts{ 
     final = $1;
      printf("final\n");
-    //printf("%s\n", final -> left -> assgnCode);
     }
 
 stmts: 
@@ -85,6 +85,10 @@ stmts:
 
 stmt:
     assign_stmt SEMICOLON{
+    $$ = $1;
+    }
+    |
+    print_stmt SEMICOLON{
     $$ = $1;
     }
     |
@@ -111,6 +115,13 @@ assign_stmt:
            yyerrok;
            }
            ;
+
+print_stmt:
+          PRINT exp{
+          $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
+          $$ -> type = 3; // type = 3 for assignment
+          sprintf($$ -> printCode, "%s \njal Print \n", $2);
+          }
 
 if_stmt:
        IF LPAREN bool_exp RPAREN LBRACE stmts RBRACE ELSE LBRACE stmts RBRACE{
@@ -232,6 +243,9 @@ void StmtTrav(stmtptr ptr){
         StmtsTrav(ptr -> while_body);
         fprintf(fp, "j While%d\nEnd%d:\n", ws, nj);
     }
+    else if(ptr -> type == 3){
+        fprintf(fp, "%s\n",ptr -> printCode);
+    }
 }
 
 
@@ -240,10 +254,10 @@ int main ()
     Adr = 0;
     sym_table = (symrec *)0;
     fp=fopen("asmb.asm","w");
-    fprintf(fp,".data\n\n.text\nli $t8,268500992\n");
+    fprintf(fp, ".data\n\n.text\nli $t8,268500992\n");
+    fprintf(fp, "j PrintEnd \nPrint: \nli $v0, 1 \nmove $a0, $t0 \nsyscall \njr $ra \nPrintEnd: \n");
     yyparse ();
     StmtsTrav(final);
-    fprintf(fp,"\nli $v0,1\nmove $a0,$t0\nsyscall\n");
     fprintf(fp,"\nli $v0,10\nsyscall\n");
     fclose(fp);
 }

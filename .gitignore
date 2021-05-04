@@ -55,3 +55,4 @@ lex.yy.c
 *.tab.h
 *.asm
 ./Pascal/*
+C

@@ -6,3 +6,6 @@ if((a > b) ^ (a <= b)){
 else{
     x = b / a;
 }
+print(a);
+print(b);
+print(x);

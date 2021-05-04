@@ -24,6 +24,8 @@ id {letter}({letter}|{digit})*
 "while" {printf("WHILE\n"); return WHILE;}
 "true" {printf("TRUE\n"); return TRUE;}
 "false" {printf("FALSE\n"); return FALSE;}
+"scan" {printf("SCAN\n"); return SCAN;}
+"print" {printf("PRINT\n"); return PRINT;}
 {id} {printf("ID\n");symrec *s;s=getsym(yytext); if(s==0) s=putsym(yytext,VAR); yylval.tptr=s; return VAR;}
 {number} {printf("NUM\n"); sscanf(yytext,"%d",&yylval.val); return NUM;}
 ";" {printf("SEMICOLON\n"); return SEMICOLON;}
