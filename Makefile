@@ -14,4 +14,4 @@ parser.tab.h: parser.y
 	bison -d parser.y
 
 clean:
-	rm parser.tab.c parser.tab.o lex.yy.o a.out parser.tab.h lex.yy.c
+	@rm -rvf parser.tab.c parser.tab.o lex.yy.o a.out parser.tab.h lex.yy.c asmb.asm

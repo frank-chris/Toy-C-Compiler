@@ -26,10 +26,11 @@ id {letter}({letter}|{digit})*
 "while" {return WHILE;}
 "true" {return TRUE;}
 "false" {return FALSE;}
-{id} {symrec *s;s=getsym(yytext); if(s==0) s=putsym(yytext,VAR); yylval.tptr=s; return VAR;}
-";" {return SEMICOLON;}
-":=" {return DEFINE;}
-"=" {return ASSIGN;}
+{id} {printf("ID\n");symrec *s;s=getsym(yytext); if(s==0) s=putsym(yytext,VAR); yylval.tptr=s; return VAR;}
+{number} {printf("NUM\n");return NUM;}
+";" {printf("SEMICOLON\n");return SEMICOLON;}
+":=" {printf("DEFINE\n");return DEFINE;}
+"=" {printf("ASSIGN\n");return ASSIGN;}
 
 "<"   {printf("LT\n");yylval.relop_type=1;return RELOP;}
 ">"   {printf("GT\n");yylval.relop_type=2;return RELOP;}

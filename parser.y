@@ -46,9 +46,9 @@ struct StmtsNode *stmtsptr;
 %type <stmtptr> stmt
 %type <stmtptr> assign_stmt if_stmt while_stmt
 
-%right '='
-%left '-' '+'
-%left '*' '/'
+%right ASSIGN
+%left MINUS PLUS
+%left TIMES DIVIDE
 
 // The Grammar
 
@@ -65,7 +65,7 @@ prog:
 
 stmts: {
      }
-     | stmt ';' stmts{
+     | stmt SEMICOLON stmts{
      $$ = (struct StmtsNode *) malloc(sizeof(struct StmtsNode));
      $$ -> singl = 1;
      $$ -> left = $1, $$ -> right = NULL;
@@ -88,7 +88,7 @@ stmt:
     ;
     
 assign_stmt:
-           VAR '=' exp{
+           VAR ASSIGN exp{
            $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
            $$ -> type = 0; // type = 0 for assignment
            sprintf($$ -> assgnCode, "%s\nsw $t0,%s($t8)\n", $3, $1 -> addr); // $3 will be t0, its value will be stored at the address(mem location) of the variable.
@@ -142,19 +142,19 @@ exp:
    count ^= 1;
    }
    |
-   exp '+' exp{
+   exp PLUS exp{
    sprintf($$, "%s", gen_code($1, $3, 1));
    }
    |
-   exp '-' exp{
+   exp MINUS exp{
    sprintf($$, "%s", gen_code($1, $3, 2));
    }
    |
-   exp '*' exp{
+   exp TIMES exp{
    sprintf($$, "%s", gen_code($1, $3, 3));
    }
    |
-   exp '/' exp{
+   exp DIVIDE exp{
    sprintf($$, "%s", gen_code($1, $3, 4));
    }
    ;
