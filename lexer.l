@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int Adr=0;
-symrec *sym_table = (symrec *)0;
+// int Adr=0;
+// symrec *sym_table = (symrec *)0;
 %}
 digit [0-9]
 number {digit}+

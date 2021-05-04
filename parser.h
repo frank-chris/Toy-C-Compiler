@@ -1,3 +1,6 @@
+#ifndef HELLO_WORLD_H
+#define HELLO_WORLD_H
+
 /* Data type for links in the chain of symbols.      */
 struct symrec
 {
@@ -13,8 +16,6 @@ typedef struct symrec symrec;
 /* The symbol table: a chain of `struct symrec'.     */
 extern symrec *sym_table;
 
-int  yylex(void);
-void yyerror (char  *);
 symrec *putsym ();
 symrec *getsym ();
 char *gen_code(char *exp1, char *exp2, int opt);
@@ -31,7 +32,6 @@ typedef struct StmtNode *stmtptr;
 
 
 
-int whileStart = 0, End = 0, elseStart = 0;
 struct StmtNode{
    int type;
    char JumpCode[20];
@@ -46,3 +46,5 @@ struct StmtNode{
 
 /*void StmtsTrav(stmtsptr ptr);
   void StmtTrav(stmtptr *ptr);*/
+
+#endif /* HELLO_WORLD_H */

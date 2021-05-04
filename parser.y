@@ -5,10 +5,15 @@
 #include<stdlib.h>  
 #include "parser.h"  /* Contains definition of `symrec'        */
 
+int Adr=0;
+symrec *sym_table = (symrec *)0;
+int whileStart = 0, End = 0, elseStart = 0;
 int count = 0;
 int labelCount = 0;
 FILE *fp;
 struct StmtsNode *final;
+int  yylex(void);
+void yyerror (char  *);
 void StmtsTrav(stmtsptr ptr);
 void StmtTrav(stmtptr ptr);
 %}
@@ -22,11 +27,17 @@ struct StmtNode *stmtptr;
 struct StmtsNode *stmtsptr;
 }
 
+
+
 %token LBRACE RBRACE LPAREN RPAREN
 %token TRUE FALSE
+%token  WHILE IF ELSE FOR
+%token SEMICOLON
+%token ASSIGN DEFINE
+%token AND OR
+%token PLUS MINUS TIMES DIVIDE
 %token  <val> NUM        /* Integer   */
 %token <val> RELOP
-%token  WHILE IF ELSE
 %token <tptr> VAR   
 %type  <c>  exp
 %type  <c>  bool_exp
@@ -52,7 +63,8 @@ prog:
     final = $1;
     }
 
-stmts:
+stmts: {
+     }
      | stmt ';' stmts{
      $$ = (struct StmtsNode *) malloc(sizeof(struct StmtsNode));
      $$ -> singl = 1;
@@ -63,6 +75,7 @@ stmts:
 stmt:
     assign_stmt{
     $$ = $1;
+    // printf("assign_stmt\n");
     }
     |
     if_stmt{
@@ -110,6 +123,7 @@ if_stmt:
        ;
 
 // t0 will store the computed value
+// INCOMPLETE
 bool_exp:
         TRUE{
         sprintf($$, "%s", "li $t0, 1\n");
@@ -129,19 +143,19 @@ exp:
    }
    |
    exp '+' exp{
-   $$ = gen_exp($1, $3, 1);
+   sprintf($$, "%s", gen_code($1, $3, 1));
    }
    |
    exp '-' exp{
-   $$ = gen_exp($1, $3, 2);
+   sprintf($$, "%s", gen_code($1, $3, 2));
    }
    |
    exp '*' exp{
-   $$ = gen_exp($1, $3, 3);
+   sprintf($$, "%s", gen_code($1, $3, 3));
    }
    |
    exp '/' exp{
-   $$ = gen_exp($1, $3, 4);
+   sprintf($$, "%s", gen_code($1, $3, 4));
    }
    ;
 
@@ -170,7 +184,7 @@ void StmtsTrav(stmtsptr ptr){
 }
 
 void StmtTrav(stmtptr ptr){
-    int ws, nj;
+    int ws, nj, es;
     printf("stmt\n");
     if(ptr == NULL) return;
  
@@ -215,4 +229,74 @@ void yyerror (char *s)  /* Called by yyparse on error */
   printf ("%s\n", s);
 }
 
+char *gen_code(char *code1, char *code2, int opt){
+
+    // The correct operation instruction
+    char *op_code = (char *)malloc(4 * sizeof(char));
+    switch(opt){
+        case 1:
+            op_code = "add";
+            break;
+        case 2:
+            op_code = "sub";
+            break;
+        case 3:
+            op_code = "mul";
+            break;
+        case 4:
+            op_code = "div";
+            break;
+    }
+
+    int l1 = strlen(code1);
+    int l2 = strlen(code2);
+    char *code = (char *)malloc(200); // We can calculate this
+
+    sprintf(code, "%s\n", code1); // All instructions to load the first expression into t0
+
+    // Now store the value in t0 into the stack
+
+    // Decrement the stack pointer by 4
+    sprintf(code, "%s %s\n", code, "subu $sp, $sp, 4");
+    // Store t0 here
+    sprintf(code, "%s %s\n", code, "sw $t0 4($sp)");
+
+    sprintf(code, "%s %s\n", code, code2); // All instructions to load the second expression into t0
+
+    // Repeat steps
+    sprintf(code, "%s %s\n", code, "subu $sp, $sp, 4");
+    sprintf(code, "%s %s\n", code, "sw $t0 4($sp)");
+
+    // Load expression2 into t1 and expression1 into t0
+    sprintf(code, "%s %s\n", code, "lw $t1 4($sp)");
+    sprintf(code, "%s %s\n", code, "addi $sp, $sp, 4");
+    sprintf(code, "%s %s\n", code, "lw $t0 4($sp)");
+    sprintf(code, "%s %s\n", code, "addi $sp, $sp, 4");
+
+    // Finally, store result into t0
+    sprintf(code, "%s %s %s\n", code, op_code, "$t0, $t0, $t1");
+
+    return code;
+}
+
+symrec * putsym (char *sym_name,int sym_type){
+  symrec *ptr;
+  ptr = (symrec *) malloc (sizeof (symrec));
+  ptr->name = (char *) malloc (strlen (sym_name) + 1);
+  strcpy (ptr->name,sym_name);
+  sprintf(ptr->addr,"%d",Adr); /* set value to 0 even if fctn.  */
+  Adr=Adr+4;
+  ptr->next = (struct symrec *)sym_table;
+  sym_table = ptr;
+  return ptr;
+}
+
+symrec *getsym (char *sym_name){
+  symrec *ptr;
+  for (ptr = sym_table; ptr != (symrec *) 0;
+       ptr = (symrec *)ptr->next)
+    if (strcmp (ptr->name,sym_name) == 0)
+      return ptr;
+  return 0;
+}
 
