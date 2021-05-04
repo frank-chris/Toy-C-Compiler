@@ -61,11 +61,19 @@ struct StmtsNode *stmtsptr;
 prog:
     stmts{ 
     final = $1;
+    //printf("%s\n", final -> left -> assgnCode);
     }
 
-stmts: {
+stmts: 
+     stmt SEMICOLON stmts {
+     printf("Multiple\n");
+     $$ = (struct StmtsNode *)malloc(sizeof(struct StmtsNode));
+     $$ -> singl = 0;
+     $$ -> left = $1, $$ -> right = $3;
      }
-     | stmt SEMICOLON stmts{
+     |
+     stmt SEMICOLON{
+     printf("Single\n");
      $$ = (struct StmtsNode *) malloc(sizeof(struct StmtsNode));
      $$ -> singl = 1;
      $$ -> left = $1, $$ -> right = NULL;
@@ -75,7 +83,6 @@ stmts: {
 stmt:
     assign_stmt{
     $$ = $1;
-    // printf("assign_stmt\n");
     }
     |
     if_stmt{
@@ -140,6 +147,10 @@ exp:
    x{
    sprintf($$, "%s", $1);
    count ^= 1;
+   }
+   |
+   LPAREN exp RPAREN{
+   sprintf($$, "%s", $2);
    }
    |
    exp PLUS exp{
@@ -235,22 +246,27 @@ char *gen_code(char *code1, char *code2, int opt){
     char *op_code = (char *)malloc(4 * sizeof(char));
     switch(opt){
         case 1:
-            op_code = "add";
+            //op_code = "add";
+            op_code = strdup("add");
             break;
         case 2:
-            op_code = "sub";
+            //op_code = "sub";
+            op_code = strdup("sub");
             break;
         case 3:
-            op_code = "mul";
+            //op_code = "mul";
+            op_code = strdup("mul");
             break;
         case 4:
-            op_code = "div";
+            //op_code = "div";
+            op_code = strdup("div");
             break;
     }
 
+    printf("%s\n", op_code);
     int l1 = strlen(code1);
     int l2 = strlen(code2);
-    char *code = (char *)malloc(200); // We can calculate this
+    char *code = (char *)malloc(2000 * sizeof(char)); // We can calculate this
 
     sprintf(code, "%s\n", code1); // All instructions to load the first expression into t0
 

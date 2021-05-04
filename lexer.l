@@ -16,10 +16,10 @@ id {letter}({letter}|{digit})*
 %%
 
 [ ] {}
-"{" {return LBRACE;}
-"}" {return RBRACE;}
-"(" {return LPAREN;}
-")" {return RPAREN;}
+"{" {printf("LBRACE\n");return LBRACE;}
+"}" {printf("RBRACE\n");return RBRACE;}
+"(" {printf("LPAREN\n");return LPAREN;}
+")" {printf("RPAREN\n");return RPAREN;}
 "if" {return IF;}
 "else" {return ELSE;}
 "for" {return FOR;}
@@ -27,7 +27,7 @@ id {letter}({letter}|{digit})*
 "true" {return TRUE;}
 "false" {return FALSE;}
 {id} {printf("ID\n");symrec *s;s=getsym(yytext); if(s==0) s=putsym(yytext,VAR); yylval.tptr=s; return VAR;}
-{number} {printf("NUM\n");return NUM;}
+{number} {printf("NUM\n"); sscanf(yytext,"%d",&yylval.val); return NUM;}
 ";" {printf("SEMICOLON\n");return SEMICOLON;}
 ":=" {printf("DEFINE\n");return DEFINE;}
 "=" {printf("ASSIGN\n");return ASSIGN;}
