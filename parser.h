@@ -43,6 +43,7 @@ struct StmtNode{
    char JumpCode[2000];
    char assgnCode[1000];
    char printCode[1000];
+   char scanCode[1000];
    struct StmtsNode *while_body;
    struct StmtsNode *if_body;
    struct StmtsNode *else_body;
