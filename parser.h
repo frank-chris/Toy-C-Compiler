@@ -1,5 +1,5 @@
-#ifndef HELLO_WORLD_H
-#define HELLO_WORLD_H
+#ifndef PARSER_H
+#define PARSER_H
 
 /* Data type for links in the chain of symbols.      */
 struct symrec
@@ -14,11 +14,16 @@ typedef struct symrec symrec;
 
 
 /* The symbol table: a chain of `struct symrec'.     */
-extern symrec *sym_table;
+
+int Adr;
+symrec *sym_table;
+
 
 symrec *putsym ();
 symrec *getsym ();
-char *gen_code(char *exp1, char *exp2, int opt);
+char *gen_code(char *code1, char *code2, int opt);
+int  yylex(void);
+void yyerror (char  *);
 
 typedef struct StmtsNode *stmtsptr;
 typedef struct StmtNode *stmtptr;
@@ -34,7 +39,7 @@ typedef struct StmtNode *stmtptr;
 
 struct StmtNode{
    int type;
-   char InitCode[100];
+   char InitCode[1000];
    char JumpCode[2000];
    char assgnCode[1000];
    struct StmtsNode *while_body;
@@ -48,4 +53,4 @@ struct StmtNode{
 /*void StmtsTrav(stmtsptr ptr);
   void StmtTrav(stmtptr *ptr);*/
 
-#endif /* HELLO_WORLD_H */
+#endif /* PARSER_H */

@@ -5,8 +5,6 @@
 #include<stdlib.h>  
 #include "parser.h"  /* Contains definition of `symrec'        */
 
-int Adr=0;
-symrec *sym_table = (symrec *)0;
 int whileStart = 0, End = 0, elseStart = 0;
 int count = 0;
 int labelCount = 0;
@@ -19,7 +17,9 @@ void StmtTrav(stmtptr ptr);
 %}
 %union {
 int val;  /* For returning numbers.                   */
-int relop_type; /*Type of relop */
+int relational_type; /*Type of relational op */
+int logical_type; /*Type of logical op */
+int arithmetic_type; /* Type of arithmetic op */
 struct symrec  *tptr;   /* For returning symbol-table pointers      */
 char c[1000];
 char nData[100];
@@ -37,7 +37,9 @@ struct StmtsNode *stmtsptr;
 %token AND OR
 %token PLUS MINUS TIMES DIVIDE
 %token  <val> NUM        /* Integer   */
-%token <val> RELOP
+%token <relational_type> RELATIONAL
+%token <logical_type> LOGICAL
+%token <arithmetic_type> ARITHMETIC
 %token <tptr> VAR   
 %type  <c>  exp
 %type  <c>  bool_exp
@@ -144,6 +146,19 @@ bool_exp:
         FALSE{
         sprintf($$, "%s", "li $t0, 0\n");
         }
+        |
+        LPAREN bool_exp RPAREN{
+        sprintf($$, "%s", $2);
+        }
+        |
+        exp RELATIONAL exp{
+        printf("%d\n", $2);
+        sprintf($$, "%s", gen_code($1, $3, $2));
+        }
+        |
+        bool_exp LOGICAL bool_exp{
+
+        }
         ;
 
 
@@ -158,20 +173,8 @@ exp:
    sprintf($$, "%s", $2);
    }
    |
-   exp PLUS exp{
-   sprintf($$, "%s", gen_code($1, $3, 1));
-   }
-   |
-   exp MINUS exp{
-   sprintf($$, "%s", gen_code($1, $3, 2));
-   }
-   |
-   exp TIMES exp{
-   sprintf($$, "%s", gen_code($1, $3, 3));
-   }
-   |
-   exp DIVIDE exp{
-   sprintf($$, "%s", gen_code($1, $3, 4));
+   exp ARITHMETIC exp{
+   sprintf($$, "%s", gen_code($1, $3, $2));
    }
    ;
 
@@ -234,92 +237,19 @@ void StmtTrav(stmtptr ptr){
 
 int main ()
 {
-   fp=fopen("asmb.asm","w");
-   fprintf(fp,".data\n\n.text\nli $t8,268500992\n");
-   yyparse ();
-   StmtsTrav(final);
-   fprintf(fp,"\nli $v0,1\nmove $a0,$t0\nsyscall\n");
-   fclose(fp);
+    Adr = 0;
+    sym_table = (symrec *)0;
+    fp=fopen("asmb.asm","w");
+    fprintf(fp,".data\n\n.text\nli $t8,268500992\n");
+    yyparse ();
+    StmtsTrav(final);
+    fprintf(fp,"\nli $v0,1\nmove $a0,$t0\nsyscall\n");
+    fprintf(fp,"\nli $v0,10\nsyscall\n");
+    fclose(fp);
 }
 
 void yyerror (char *s)  /* Called by yyparse on error */
 {
   printf ("%s\n", s);
-}
-
-char *gen_code(char *code1, char *code2, int opt){
-
-    // The correct operation instruction
-    char *op_code = (char *)malloc(4 * sizeof(char));
-    switch(opt){
-        case 1:
-            //op_code = "add";
-            op_code = strdup("add");
-            break;
-        case 2:
-            //op_code = "sub";
-            op_code = strdup("sub");
-            break;
-        case 3:
-            //op_code = "mul";
-            op_code = strdup("mul");
-            break;
-        case 4:
-            //op_code = "div";
-            op_code = strdup("div");
-            break;
-    }
-
-    printf("%s\n", op_code);
-    int l1 = strlen(code1);
-    int l2 = strlen(code2);
-    char *code = (char *)malloc(2000 * sizeof(char)); // We can calculate this
-
-    sprintf(code, "%s\n", code1); // All instructions to load the first expression into t0
-
-    // Now store the value in t0 into the stack
-
-    // Decrement the stack pointer by 4
-    sprintf(code, "%s %s\n", code, "subu $sp, $sp, 4");
-    // Store t0 here
-    sprintf(code, "%s %s\n", code, "sw $t0 4($sp)");
-
-    sprintf(code, "%s %s\n", code, code2); // All instructions to load the second expression into t0
-
-    // Repeat steps
-    sprintf(code, "%s %s\n", code, "subu $sp, $sp, 4");
-    sprintf(code, "%s %s\n", code, "sw $t0 4($sp)");
-
-    // Load expression2 into t1 and expression1 into t0
-    sprintf(code, "%s %s\n", code, "lw $t1 4($sp)");
-    sprintf(code, "%s %s\n", code, "addi $sp, $sp, 4");
-    sprintf(code, "%s %s\n", code, "lw $t0 4($sp)");
-    sprintf(code, "%s %s\n", code, "addi $sp, $sp, 4");
-
-    // Finally, store result into t0
-    sprintf(code, "%s %s %s\n", code, op_code, "$t0, $t0, $t1");
-
-    return code;
-}
-
-symrec * putsym (char *sym_name,int sym_type){
-  symrec *ptr;
-  ptr = (symrec *) malloc (sizeof (symrec));
-  ptr->name = (char *) malloc (strlen (sym_name) + 1);
-  strcpy (ptr->name,sym_name);
-  sprintf(ptr->addr,"%d",Adr); /* set value to 0 even if fctn.  */
-  Adr=Adr+4;
-  ptr->next = (struct symrec *)sym_table;
-  sym_table = ptr;
-  return ptr;
-}
-
-symrec *getsym (char *sym_name){
-  symrec *ptr;
-  for (ptr = sym_table; ptr != (symrec *) 0;
-       ptr = (symrec *)ptr->next)
-    if (strcmp (ptr->name,sym_name) == 0)
-      return ptr;
-  return 0;
 }
 

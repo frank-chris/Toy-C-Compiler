@@ -5,8 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// int Adr=0;
-// symrec *sym_table = (symrec *)0;
 %}
 digit [0-9]
 number {digit}+
@@ -16,37 +14,41 @@ id {letter}({letter}|{digit})*
 %%
 
 [ ] {}
-"{" {printf("LBRACE\n");return LBRACE;}
-"}" {printf("RBRACE\n");return RBRACE;}
-"(" {printf("LPAREN\n");return LPAREN;}
-")" {printf("RPAREN\n");return RPAREN;}
-"if" {printf("IF\n");return IF;}
-"else" {printf("ELSE\n");return ELSE;}
-"for" {printf("FOR\n");return FOR;}
-"while" {printf("WHILE\n");return WHILE;}
-"true" {printf("TRUE\n");return TRUE;}
-"false" {printf("FALSE\n");return FALSE;}
+"{" {printf("LBRACE\n"); return LBRACE;}
+"}" {printf("RBRACE\n"); return RBRACE;}
+"(" {printf("LPAREN\n"); return LPAREN;}
+")" {printf("RPAREN\n"); return RPAREN;}
+"if" {printf("IF\n"); return IF;}
+"else" {printf("ELSE\n"); return ELSE;}
+"for" {printf("FOR\n"); return FOR;}
+"while" {printf("WHILE\n"); return WHILE;}
+"true" {printf("TRUE\n"); return TRUE;}
+"false" {printf("FALSE\n"); return FALSE;}
 {id} {printf("ID\n");symrec *s;s=getsym(yytext); if(s==0) s=putsym(yytext,VAR); yylval.tptr=s; return VAR;}
 {number} {printf("NUM\n"); sscanf(yytext,"%d",&yylval.val); return NUM;}
-";" {printf("SEMICOLON\n");return SEMICOLON;}
-":=" {printf("DEFINE\n");return DEFINE;}
-"=" {printf("ASSIGN\n");return ASSIGN;}
+";" {printf("SEMICOLON\n"); return SEMICOLON;}
+":=" {printf("DEFINE\n"); return DEFINE;}
+"=" {printf("ASSIGN\n"); return ASSIGN;}
 
-"<"   {printf("LT\n");yylval.relop_type=1;return RELOP;}
-">"   {printf("GT\n");yylval.relop_type=2;return RELOP;}
-"<="   {printf("LE\n");yylval.relop_type=3;return RELOP;}
-">="   {printf("GE\n");yylval.relop_type=4;return RELOP;}
-"=="   {printf("EQ\n");yylval.relop_type=5;return RELOP;}
+"<"   {printf("LT\n"); yylval.relational_type=1; return RELATIONAL;}
+">"   {printf("GT\n"); yylval.relational_type=2; return RELATIONAL;}
+"<="   {printf("LE\n"); yylval.relational_type=3; return RELATIONAL;}
+">="   {printf("GE\n"); yylval.relational_type=4; return RELATIONAL;}
+"=="   {printf("EQ\n"); yylval.relational_type=5; return RELATIONAL;}
+"!="   {printf("NE\n"); yylval.relational_type=6; return RELATIONAL;}
 
-"&&" {printf("AND\n");return AND;}
-"||" {printf("OR\n");return OR;}
+"&" {printf("AND\n"); yylval.logical_type=7; return LOGICAL;}
+"|" {printf("OR\n"); yylval.logical_type=8; return LOGICAL;}
+"^" {printf("XOR\n"); yylval.logical_type=9; return LOGICAL;}
 
-"+" {printf("PLUS\n");return PLUS;}
-"-" {printf("MINUS\n");return MINUS;}
-"*" {printf("TIMES\n");return TIMES;}
-"/" {printf("DIVIDE\n");return DIVIDE;}
+"+" {printf("PLUS\n"); yylval.arithmetic_type=10; return ARITHMETIC;}
+"-" {printf("MINUS\n"); yylval.arithmetic_type=11; return ARITHMETIC;}
+"*" {printf("TIMES\n"); yylval.arithmetic_type=12; return ARITHMETIC;}
+"/" {printf("DIVIDE\n"); yylval.arithmetic_type=13; return ARITHMETIC;}
+"%" {printf("MODULUS\n"); yylval.arithmetic_type=13; return ARITHMETIC;}
 
 [ \n\t] {}
 . {printf("error:Character %s\n",yytext);exit(0);}
 
 %%
+

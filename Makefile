@@ -1,17 +1,19 @@
-a.out: parser.tab.o lex.yy.o
-	cc -g parser.tab.o lex.yy.o -lfl
+build: flex bison obj
+	@echo "Building"
+	gcc -lfl parser.tab.o expressions.o sym_operations.o lex.yy.o -o C
 
-parser.tab.o: parser.tab.h parser.tab.c
-	cc -g -c parser.tab.c
-
-lex.yy.o: parser.tab.h lex.yy.c
-	cc -g -c lex.yy.c
-
-lex.yy.c: lexer.l
+flex: lexer.l
+	@echo "Building Lexer..."
 	flex lexer.l
 
-parser.tab.h: parser.y
+bison: parser.y
+	@echo "Building Parser..."
 	bison -d parser.y
 
+obj: expressions.c sym_operations.c parser.tab.c lex.yy.c
+	@echo "Compiling support files ..."
+	gcc -c expressions.c sym_operations.c parser.tab.c lex.yy.c
+
 clean:
-	@rm -rvf parser.tab.c parser.tab.o lex.yy.o a.out parser.tab.h lex.yy.c asmb.asm
+	@echo "Cleaning..."
+	@rm -rvf lex.yy.c parser.tab.h parser.tab.c expressions.o sym_operations.o parser.tab.o lex.yy.o
