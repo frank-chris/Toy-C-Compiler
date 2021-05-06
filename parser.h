@@ -6,10 +6,17 @@ struct symrec
 {
   char *name;  /* name of symbol                     */
   char addr[100];           /* value of a VAR          */
+  int val; /* value of the VAR */
   struct symrec *next;    /* link field              */
 };
 
+struct exptable{
+    char code[1000];
+    int val;
+};
+
 typedef struct symrec symrec;
+typedef struct exptable exptable;
 
 
 

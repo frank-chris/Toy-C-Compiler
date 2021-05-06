@@ -21,8 +21,8 @@ int relational_type; /*Type of relational op */
 int logical_type; /*Type of logical op */
 int arithmetic_type; /* Type of arithmetic op */
 struct symrec  *tptr;   /* For returning symbol-table pointers      */
-char c[1000];
-char nData[100];
+struct exptable  *expptr;   /* For returning expression pointers      */
+char nData[200];
 struct StmtNode *stmtptr;
 struct StmtsNode *stmtsptr;
 }
@@ -42,8 +42,7 @@ struct StmtsNode *stmtsptr;
 %token <logical_type> LOGICAL
 %token <arithmetic_type> ARITHMETIC
 %token <tptr> VAR   
-%type  <c>  exp
-%type  <c>  bool_exp
+%type  <expptr>  exp bool_exp
 %type <nData> x
 %type <stmtsptr> stmts
 %type <stmtptr> stmt
@@ -109,7 +108,8 @@ assign_stmt:
            VAR ASSIGN exp{
            $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
            $$ -> type = 0; // type = 0 for assignment
-           sprintf($$ -> assgnCode, "%s\nsw $t0,%s($t8)\n", $3, $1 -> addr); // $3 will be t0, its value will be stored at the address(mem location) of the variable.
+           // $1 -> val  = $3 -> val;
+           sprintf($$ -> assgnCode, "%s\nsw $t0,%s($t8)\n", $3 -> code, $1 -> addr); // $3 will be t0, its value will be stored at the address(mem location) of the variable.
            $$ -> while_body = NULL;
            $$ -> if_body = NULL;
            $$ -> else_body = NULL;
@@ -133,14 +133,14 @@ print_stmt:
           PRINT exp{
           $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
           $$ -> type = 3; // type = 3 for print
-          sprintf($$ -> printCode, "%s \njal Print \n", $2);
+          sprintf($$ -> printCode, "%s \njal Print \n", $2 -> code);
           }
 
 if_stmt:
        IF LPAREN bool_exp RPAREN LBRACE stmts RBRACE ELSE LBRACE stmts RBRACE{
        $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
        $$ -> type = 1; // type = 1 for if else
-       sprintf($$ -> InitCode,"%s", $3);
+       sprintf($$ -> InitCode,"%s", $3 -> code);
        sprintf($$ -> JumpCode, "beqz $t0,"); // Branch to else part
        $$ -> while_body = NULL;
        $$ -> if_body = $6;
@@ -152,7 +152,7 @@ while_stmt:
           WHILE LPAREN bool_exp RPAREN LBRACE stmts RBRACE{
           $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
           $$ -> type = 2; // type = 2 for while
-          sprintf($$ -> InitCode,"%s", $3);
+          sprintf($$ -> InitCode,"%s", $3 -> code);
           sprintf($$ -> JumpCode, "beqz $t0,"); // Branch if the value computed at bool_exp(t0) is 1. Where to, we will decide labels later
           $$ -> while_body = $6;
           $$ -> if_body = NULL;
@@ -164,23 +164,28 @@ while_stmt:
 // INCOMPLETE
 bool_exp:
         TRUE{
-        sprintf($$, "%s", "li $t0, 1\n");
+        $$ = (exptable *)malloc(sizeof(exptable));
+        sprintf($$ -> code, "%s", "li $t0, 1\n");
         }
         |
         FALSE{
-        sprintf($$, "%s", "li $t0, 0\n");
+        $$ = (exptable *)malloc(sizeof(exptable));
+        sprintf($$ -> code, "%s", "li $t0, 0\n");
         }
         |
         LPAREN bool_exp RPAREN{
-        sprintf($$, "%s", $2);
+        $$ = (exptable *)malloc(sizeof(exptable));
+        sprintf($$ -> code, "%s", $2 -> code);
         }
         |
         exp RELATIONAL exp{
-        sprintf($$, "%s", gen_code($1, $3, $2));
+        $$ = (exptable *)malloc(sizeof(exptable));
+        sprintf($$ -> code, "%s", gen_code($1 -> code, $3 -> code, $2));
         }
         |
         bool_exp LOGICAL bool_exp{
-        sprintf($$, "%s", gen_code($1, $3, $2));
+        $$ = (exptable *)malloc(sizeof(exptable));
+        sprintf($$ -> code, "%s", gen_code($1 -> code, $3 -> code, $2));
         }
         ;
 
@@ -188,16 +193,19 @@ bool_exp:
 // t0 will always have exp
 exp:
    x{
-   sprintf($$, "%s", $1);
+   $$ = (exptable *)malloc(sizeof(exptable));
+   sprintf($$ -> code, "%s", $1);
    count ^= 1;
    }
    |
    LPAREN exp RPAREN{
-   sprintf($$, "%s", $2);
+   $$ = (exptable *)malloc(sizeof(exptable));
+   sprintf($$ -> code, "%s", $2 -> code);
    }
    |
    exp ARITHMETIC exp{
-   sprintf($$, "%s", gen_code($1, $3, $2));
+   $$ = (exptable *)malloc(sizeof(exptable));
+   sprintf($$ -> code, "%s", gen_code($1 -> code, $3 -> code, $2));
    }
    ;
 
