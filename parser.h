@@ -8,6 +8,7 @@ struct symrec
   char addr[100];           /* value of a VAR          */
   int val; /* value of the VAR */
   struct symrec *next;    /* link field              */
+  int len; /* Length of array. -1 if just a variable. */
 };
 
 struct exptable{
@@ -26,8 +27,9 @@ int Adr;
 symrec *sym_table;
 
 
-symrec *putsym ();
-symrec *getsym ();
+symrec *putsym();
+symrec *getsym();
+void arr_allocate(symrec *tptr, int size);
 char *gen_code(char *code1, char *code2, int opt);
 int compute_expr(int exp1, int exp2, int opt);
 int  yylex(void);

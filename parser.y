@@ -29,7 +29,7 @@ struct StmtsNode *stmtsptr;
 
 
 
-%token LBRACE RBRACE LPAREN RPAREN
+%token LBRACE RBRACE LPAREN RPAREN LBRACK RBRACK
 %token TRUE FALSE
 %token  WHILE IF ELSE FOR
 %token SCAN PRINT
@@ -41,15 +41,15 @@ struct StmtsNode *stmtsptr;
 %token <relational_type> RELATIONAL
 %token <logical_type> LOGICAL
 %token <arithmetic_type> ARITHMETIC
-%token <tptr> VAR   
+%token <tptr> VAR
 %type  <expptr>  exp bool_exp x
 %type <stmtsptr> stmts
 %type <stmtptr> stmt
-%type <stmtptr> assign_stmt print_stmt scan_stmt if_stmt while_stmt
+%type <stmtptr> array_decl assign_stmt print_stmt scan_stmt if_stmt while_stmt
 
 %right ASSIGN
 %left MINUS PLUS
-%left TIMES DIVIDE
+%left TIMES DIVIDE MODULUS
 
 // The Grammar
 
@@ -82,6 +82,10 @@ stmts:
      ;
 
 stmt:
+    array_decl SEMICOLON{
+    $$ = $1;
+    }
+    |
     assign_stmt SEMICOLON{
     $$ = $1;
     }
@@ -102,11 +106,23 @@ stmt:
     $$ = $1;
     }
     ;
+
+array_decl:
+          VAR LBRACK exp RBRACK{
+          $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
+          $$ -> type = 0; // type = 0 for declaration and assignment
+          
+          // Allocate space equal to size of exp
+          arr_allocate($1, $3 -> val);
+          $1 -> len = $3 -> val;
+          }
+          ;
+
     
 assign_stmt:
            VAR ASSIGN exp{
            $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
-           $$ -> type = 0; // type = 0 for assignment
+           $$ -> type = 0; // type = 0 for declaration and assignment
            sprintf($$ -> assgnCode, "%s\nsw $t0,%s($t8)\n", $3 -> code, $1 -> addr); // $3 will be t0, its value will be stored at the address(mem location) of the variable.
            $1 -> val  = $3 -> val;
            $$ -> while_body = NULL;
@@ -160,7 +176,6 @@ while_stmt:
           ;
 
 // t0 will store the computed value
-// INCOMPLETE
 bool_exp:
         TRUE{
         $$ = (exptable *)malloc(sizeof(exptable));

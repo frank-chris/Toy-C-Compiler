@@ -16,6 +16,8 @@ id {letter}({letter}|{digit})*
 [ ] {}
 "{" {printf("LBRACE\n"); return LBRACE;}
 "}" {printf("RBRACE\n"); return RBRACE;}
+"[" {printf("LBRACK\n"); return LBRACK;}
+"]" {printf("RBRACK\n"); return RBRACK;}
 "(" {printf("LPAREN\n"); return LPAREN;}
 ")" {printf("RPAREN\n"); return RPAREN;}
 "if" {printf("IF\n"); return IF;}
@@ -26,7 +28,7 @@ id {letter}({letter}|{digit})*
 "false" {printf("FALSE\n"); return FALSE;}
 "scan" {printf("SCAN\n"); return SCAN;}
 "print" {printf("PRINT\n"); return PRINT;}
-{id} {printf("ID\n");symrec *s;s=getsym(yytext); if(s==0) s=putsym(yytext,VAR); yylval.tptr=s; return VAR;}
+{id} {printf("ID\n"); symrec *s; s = getsym(yytext); if(s == 0) s = putsym(yytext); yylval.tptr = s; return VAR;}
 {number} {printf("NUM\n"); sscanf(yytext,"%d",&yylval.val); return NUM;}
 ";" {printf("SEMICOLON\n"); return SEMICOLON;}
 ":=" {printf("DEFINE\n"); return DEFINE;}
