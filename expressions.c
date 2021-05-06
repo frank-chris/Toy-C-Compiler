@@ -85,3 +85,55 @@ char *gen_code(char *code1, char *code2, int opt){
     return code;
 }
 
+
+int compute_expr(int exp1, int exp2, int opt){
+
+    int ans; // stores the result of the expression
+    switch(opt){
+        case 1:
+            ans = (exp1 < exp2);
+            break;
+        case 2:
+            ans = (exp1 > exp2);
+            break;
+        case 3:
+            ans = (exp1 <= exp2);
+            break;
+        case 4:
+            ans = (exp1 >= exp2);
+            break;
+        case 5:
+            ans = (exp1 == exp2);
+            break;
+        case 6:
+            ans = (exp1 != exp2);
+            break;
+        case 7:
+            ans = (exp1 & exp2); // & returns bitwise and, use && if bool answer required
+            break;
+        case 8:
+            ans = (exp1 | exp2);
+            break;
+        case 9:
+            ans = (exp1 ^ exp2);
+            break;
+        case 10:
+            ans = (exp1 + exp2);
+            break;
+        case 11:
+            ans = (exp1 - exp2);
+            break;
+        case 12:
+            ans = (exp1 * exp2);
+            break;
+        case 13:
+            ans = (exp1 / exp2);
+            break;
+        case 14:
+            ans = (exp1 % exp2);
+            break;
+    }
+
+    return ans;
+}
+

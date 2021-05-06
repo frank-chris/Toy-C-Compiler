@@ -42,8 +42,7 @@ struct StmtsNode *stmtsptr;
 %token <logical_type> LOGICAL
 %token <arithmetic_type> ARITHMETIC
 %token <tptr> VAR   
-%type  <expptr>  exp bool_exp
-%type <nData> x
+%type  <expptr>  exp bool_exp x
 %type <stmtsptr> stmts
 %type <stmtptr> stmt
 %type <stmtptr> assign_stmt print_stmt scan_stmt if_stmt while_stmt
@@ -108,8 +107,8 @@ assign_stmt:
            VAR ASSIGN exp{
            $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
            $$ -> type = 0; // type = 0 for assignment
-           // $1 -> val  = $3 -> val;
            sprintf($$ -> assgnCode, "%s\nsw $t0,%s($t8)\n", $3 -> code, $1 -> addr); // $3 will be t0, its value will be stored at the address(mem location) of the variable.
+           $1 -> val  = $3 -> val;
            $$ -> while_body = NULL;
            $$ -> if_body = NULL;
            $$ -> else_body = NULL;
@@ -181,11 +180,13 @@ bool_exp:
         exp RELATIONAL exp{
         $$ = (exptable *)malloc(sizeof(exptable));
         sprintf($$ -> code, "%s", gen_code($1 -> code, $3 -> code, $2));
+        $$ -> val  = compute_expr($1 -> val, $3 -> val, $2);
         }
         |
         bool_exp LOGICAL bool_exp{
         $$ = (exptable *)malloc(sizeof(exptable));
         sprintf($$ -> code, "%s", gen_code($1 -> code, $3 -> code, $2));
+        $$ -> val  = compute_expr($1 -> val, $3 -> val, $2);
         }
         ;
 
@@ -194,29 +195,36 @@ bool_exp:
 exp:
    x{
    $$ = (exptable *)malloc(sizeof(exptable));
-   sprintf($$ -> code, "%s", $1);
+   sprintf($$ -> code, "%s", $1 -> code);
+   $$ -> val = $1 -> val;
    count ^= 1;
    }
    |
    LPAREN exp RPAREN{
    $$ = (exptable *)malloc(sizeof(exptable));
    sprintf($$ -> code, "%s", $2 -> code);
+   $$ -> val = $2 -> val;
    }
    |
    exp ARITHMETIC exp{
    $$ = (exptable *)malloc(sizeof(exptable));
    sprintf($$ -> code, "%s", gen_code($1 -> code, $3 -> code, $2));
+   $$ -> val  = compute_expr($1 -> val, $3 -> val, $2);
    }
    ;
 
 x:
  NUM{
- sprintf($$, "li $t%d, %d", count, $1);
+ $$ = (exptable *)malloc(sizeof(exptable));
+ sprintf($$ -> code, "li $t%d, %d", count, $1);
+ $$ -> val = $1;
  count ^= 1;
  }
  |
  VAR{
- sprintf($$, "lw $t%d, %s($t8)", count, $1 -> addr);
+ $$ = (exptable *)malloc(sizeof(exptable));
+ sprintf($$ -> code, "lw $t%d, %s($t8)", count, $1 -> addr);
+ $$ -> val = $1 -> val;
  count ^= 1;
  }
  ;

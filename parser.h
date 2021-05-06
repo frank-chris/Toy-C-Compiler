@@ -29,6 +29,7 @@ symrec *sym_table;
 symrec *putsym ();
 symrec *getsym ();
 char *gen_code(char *code1, char *code2, int opt);
+int compute_expr(int exp1, int exp2, int opt);
 int  yylex(void);
 void yyerror (char  *);
 
