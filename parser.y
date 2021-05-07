@@ -123,11 +123,32 @@ assign_stmt:
            VAR ASSIGN exp{
            $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
            $$ -> type = 0; // type = 0 for declaration and assignment
+           count = 0;
            sprintf($$ -> assgnCode, "%s\nsw $t0,%s($t8)\n", $3 -> code, $1 -> addr); // $3 will be t0, its value will be stored at the address(mem location) of the variable.
            $1 -> val  = $3 -> val;
            $$ -> while_body = NULL;
            $$ -> if_body = NULL;
            $$ -> else_body = NULL;
+           }
+           |
+           VAR LBRACK exp RBRACK ASSIGN exp{
+           $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
+           $$ -> type = 0; // type = 0 for declaration and assignment
+           count = 0;
+           sprintf($$ -> assgnCode, "%s\n", $3 -> code);
+           sprintf($$ -> assgnCode, "%ssll $t0, $t0, 2\n", $$ -> assgnCode); // Multiply by 4
+           sprintf($$ -> assgnCode, "%sadd $t0, $t0, $t8\n", $$ -> assgnCode); // Add the global base into $t0
+           sprintf($$ -> assgnCode, "%sadd $t0, $t0, %s\n", $$ -> assgnCode, $1 -> addr); // Add the base address of VAR into $t2
+
+           sprintf($$ -> assgnCode, "%s%s\n", $$ -> assgnCode, "subu $sp, $sp, 4");
+           sprintf($$ -> assgnCode, "%s%s\n", $$ -> assgnCode, "sw $t0 4($sp)"); // Store calculated address into the stack
+
+           sprintf($$ -> assgnCode, "%s%s\n", $$ -> assgnCode, $6 -> code);
+
+           sprintf($$ -> assgnCode, "%s%s\n", $$ -> assgnCode, "lw $t1 4($sp)");
+           sprintf($$ -> assgnCode, "%s%s\n", $$ -> assgnCode, "addi $sp, $sp, 4");
+
+           sprintf($$ -> assgnCode, "%s%s\n", $$ -> assgnCode, "sw $t0, ($t1)\n");
            }
            |
            error{
@@ -231,14 +252,38 @@ exp:
 x:
  NUM{
  $$ = (exptable *)malloc(sizeof(exptable));
- sprintf($$ -> code, "li $t%d, %d", count, $1);
+ sprintf($$ -> code, "li $t%d, %d\n", count, $1);
  $$ -> val = $1;
+ count ^= 1;
+ }
+ |
+ VAR LBRACK NUM RBRACK{
+ // There are two ways of doing this
+ long int offset = $3;
+ long int base = atol($1 -> addr);
+ long int final_address = base + 4 * offset;
+ $$ = (exptable *)malloc(sizeof(exptable));
+ sprintf($$ -> code, "lw $t%d, %ld($t8)\n", count, final_address);
+
+ /* 
+ Alternate method-
+ sprintf($$ -> code, "li $t2, %d\n", $3); // Store the offset into $t2
+ sprintf($$ -> code, "sll $t2 $t2 2\n");
+ sprintf($$ -> code, "li $t%d %s\n", count, $1 -> addr);
+ sprintf($$ -> code, "add $t%d $t%d $t2\n", count, count);
+ sprintf($$ -> code, "add $t%d $t%d $t8\n", count);
+ sprintf($$ -> code, "lw $t%d, ($t%d)\n", count, count);
+ */
+
+ // Set to -1, invalid
+ $$ -> val = -1;
+
  count ^= 1;
  }
  |
  VAR{
  $$ = (exptable *)malloc(sizeof(exptable));
- sprintf($$ -> code, "lw $t%d, %s($t8)", count, $1 -> addr);
+ sprintf($$ -> code, "lw $t%d, %s($t8)\n", count, $1 -> addr);
  $$ -> val = $1 -> val;
  count ^= 1;
  }
