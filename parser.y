@@ -252,19 +252,19 @@ exp:
 x:
  NUM{
  $$ = (exptable *)malloc(sizeof(exptable));
- sprintf($$ -> code, "li $t%d, %d\n", count, $1);
+ //sprintf($$ -> code, "li $t%d, %d\n", count, $1);
+ sprintf($$ -> code, "li $t0, %d\n", $1);
  $$ -> val = $1;
  count ^= 1;
  }
  |
- VAR LBRACK NUM RBRACK{
+ VAR LBRACK exp RBRACK{
  // There are two ways of doing this
- long int offset = $3;
- long int base = atol($1 -> addr);
- long int final_address = base + 4 * offset;
  $$ = (exptable *)malloc(sizeof(exptable));
- sprintf($$ -> code, "lw $t%d, %ld($t8)\n", count, final_address);
+ sprintf($$ -> code, "%s\nsll $t0, $t0, 2\nadd $t0, $t0, $t8\nadd $t0, $t0, %s\nlw $t0, ($t0)\n", $3 -> code, $1 -> addr);
 
+ $$ -> val = -1;
+ count ^= 1;
  /* 
  Alternate method-
  sprintf($$ -> code, "li $t2, %d\n", $3); // Store the offset into $t2
@@ -276,14 +276,12 @@ x:
  */
 
  // Set to -1, invalid
- $$ -> val = -1;
-
- count ^= 1;
  }
  |
  VAR{
  $$ = (exptable *)malloc(sizeof(exptable));
- sprintf($$ -> code, "lw $t%d, %s($t8)\n", count, $1 -> addr);
+ //sprintf($$ -> code, "lw $t%d, %s($t8)\n", count, $1 -> addr);
+ sprintf($$ -> code, "lw $t0, %s($t8)\n", $1 -> addr);
  $$ -> val = $1 -> val;
  count ^= 1;
  }

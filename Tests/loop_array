@@ -1,0 +1,13 @@
+N = 11;
+arr[N + 1];
+i = 0;
+while(i < N){
+    arr[i] = (i * i) + 1;
+    i = i + 1;
+}
+arr[10] = 2;
+j = 0;
+while(j < (N + 1)){
+    print(arr[j]);
+    j = j + 1;
+}

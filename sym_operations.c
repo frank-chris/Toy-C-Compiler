@@ -26,7 +26,7 @@ symrec *getsym(char *sym_name){
 }
 
 void arr_allocate(symrec *tptr, int size){
-    Adr += (size - 1);
+    Adr += 4 * (size - 1);
 
 
     // In case we want to store the values stored by arrays

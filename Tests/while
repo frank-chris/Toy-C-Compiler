@@ -3,3 +3,4 @@ while(false){
     b = 0;
 }
 c = 2;
+print(c);

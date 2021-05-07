@@ -12,7 +12,7 @@ struct symrec
 };
 
 struct exptable{
-    char code[1000];
+    char code[2000];
     int val;
 };
 
