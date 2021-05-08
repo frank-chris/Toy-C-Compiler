@@ -346,7 +346,7 @@ int main ()
     sym_table = (symrec *)0;
     fp=fopen("asmb.asm","w");
     fprintf(fp, ".data\n\n.text\nli $t8,268500992\n");
-    fprintf(fp, "\nj PrintEnd \nPrint: \nli $v0, 1 \nmove $a0, $t0 \nsyscall \njr $ra \nPrintEnd: \n");
+    fprintf(fp, "\nj PrintEnd \nPrint: \nli $v0, 1 \nmove $a0, $t0 \nsyscall \nli $v0, 11 \nla $a0, '\\n' \nsyscall \njr $ra \nPrintEnd: \n");
     fprintf(fp, "\nj ScanEnd \nScan: \nli $v0, 5 \nsyscall \nmove $t0, $v0 \njr $ra \nScanEnd: \n");
     yyparse ();
     StmtsTrav(final);
