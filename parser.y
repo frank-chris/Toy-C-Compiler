@@ -136,13 +136,14 @@ function_decl:
         LPAREN{
         fptr -> f_symrec = (symrec *)malloc(sizeof(symrec));
         fptr -> params = 0;
+
+        sym_table = cur_table;
+        cur_table = fptr -> f_symrec;
         }
         parameter_list RPAREN LBRACE{
         fptr -> local_vars = 0;
         }
         local_variable_decl{
-        sym_table = cur_table;
-        cur_table = fptr -> f_symrec;
         }
         stmts RBRACE{
         cur_table = sym_table;
@@ -161,12 +162,12 @@ function_decl:
 parameter_list:
               |
               VAR COMMA parameter_list{
-              putsym($1, fptr -> f_symrec, 1, (fptr -> params + 1) * 4);
+              cur_table = putsym($1, fptr -> f_symrec, 1, (fptr -> params + 1) * 4);
               fptr -> params += 1;
               }
               |
               VAR{
-              putsym($1, fptr -> f_symrec, 1, (fptr -> params + 1) * 4);
+              cur_table = putsym($1, fptr -> f_symrec, 1, (fptr -> params + 1) * 4);
               fptr -> params += 1;
               }
               ;
@@ -188,7 +189,7 @@ local_variable_decl:
 
 local_decl:
           VAR ASSIGN NUM SEMICOLON{
-          putsym($1, fptr -> f_symrec, 1, (fptr -> params + fptr -> local_vars + 1) * 4);
+          cur_table = putsym($1, fptr -> f_symrec, 1, (fptr -> params + fptr -> local_vars + 1) * 4);
           fptr -> local_vars += 1;
           sprintf($$, "subu $sp, $sp, 4\nli $t0, %d\nsw $t0, ($sp)\n", $3);
           }
@@ -200,12 +201,17 @@ array_decl:
           $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
           $$ -> type = 0; // type = 0 for declaration and assignment
           
+          int put = 0;
           sptr = getsym($1, cur_table);
-          if(sptr == 0)
+          if(sptr == 0){
               sptr = putsym($1, cur_table, 0, 0);
+              put = 1;
+          }
           // Allocate space equal to size of exp
           arr_allocate(sptr, $3 -> val);
           sptr -> len = $3 -> val;
+          if(put == 1)
+              cur_table = sptr;
           }
           ;
 
@@ -214,15 +220,16 @@ assign_stmt:
            VAR ASSIGN exp{
            $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
            $$ -> type = 0; // type = 0 for declaration and assignment
+           int put = 0;
            sptr = getsym($1, cur_table);
            if(sptr == 0){
                sptr = putsym($1, cur_table, 0, 0);
+               put = 1;
            }
- printf("Name: %s\n", $1);
- fflush(stdout);
            sprintf($$ -> assgnCode, "%s\nsw $t0,%s($t8)\n", $3 -> code, sptr -> addr); // $3 will be t0, its value will be stored at the address(mem location) of the variable.
            sptr -> val  = $3 -> val;
-           cur_table = sptr;
+           if(put == 1)
+               cur_table = sptr;
            $$ -> while_body = NULL;
            $$ -> if_body = NULL;
            $$ -> else_body = NULL;
@@ -232,6 +239,9 @@ assign_stmt:
            $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
            $$ -> type = 0; // type = 0 for declaration and assignment
            sptr = getsym($1, cur_table);
+           if(sptr == 0){
+               printf("Variable %s not declared.\n", $1);
+           }
            sprintf($$ -> assgnCode, "%s\n", $3 -> code);
            sprintf($$ -> assgnCode, "%ssll $t0, $t0, 2\n", $$ -> assgnCode); // Multiply by 4
            sprintf($$ -> assgnCode, "%sadd $t0, $t0, $t8\n", $$ -> assgnCode); // Add the global base into $t0
@@ -258,9 +268,17 @@ scan_stmt:
          // Don't use the code returned by VAR
          $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
          $$ -> type = 4; // type = 4 for scan
+         int put = 0;
          sptr = getsym($3, cur_table);
-         sprintf($$ -> scanCode, "\njal Scan \nsw $t0, %s($t8)", sptr -> addr);
+         if(sptr == 0){
+             sptr = putsym($3, cur_table, 0, 0);
+             put = 1;
          }
+         sprintf($$ -> scanCode, "\njal Scan \nsw $t0, %s($t8)", sptr -> addr);
+         if(put == 1)
+               cur_table = sptr; 
+         }
+         ;
 
 print_stmt:
           PRINT exp{
@@ -268,6 +286,7 @@ print_stmt:
           $$ -> type = 3; // type = 3 for print
           sprintf($$ -> printCode, "%s \njal Print \n", $2 -> code);
           }
+          ;
 
 if_stmt:
        IF LPAREN bool_exp RPAREN LBRACE stmts RBRACE ELSE LBRACE stmts RBRACE{
@@ -357,6 +376,10 @@ x:
  // There are two ways of doing this
  $$ = (exptable *)malloc(sizeof(exptable));
  sptr = getsym($1, cur_table);
+ if(sptr == 0){
+     printf("Variable %s not declared.\n", $1);
+     fflush(stdout);
+ }
  if(func == 0){
      sprintf($$ -> code, "%s\nsll $t0, $t0, 2\nadd $t0, $t0, $t8\nadd $t0, $t0, %s\nlw $t0, ($t0)\n", $3 -> code, sptr -> addr);
  }
@@ -368,12 +391,10 @@ x:
  }
  |
  VAR{
-   printf("HEYY%s\n", cur_table -> addr);
-   fflush(stdout);
  $$ = (exptable *)malloc(sizeof(exptable));
  sptr = getsym($1, cur_table);
  if(sptr == 0){
-     printf("Variable not declared.\n");
+     printf("Variable %s not declared.\n", $1);
      fflush(stdout);
  }
  if(func == 0){

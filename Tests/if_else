@@ -4,4 +4,4 @@ if(true){
 else{
     a = 1;
 }
-
+print(a);
