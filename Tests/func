@@ -6,4 +6,9 @@ f(a, b){
     print(c);
 }
 
-x = 0;
+g(x, y){
+    start
+    end
+    print(1);
+}
+

@@ -5,7 +5,7 @@
 #include "parser.h"
 
 symrec *putsym(char *sym_name, symrec *sym_tab, int func, int faddr){
-    printf("NAMESSS: %s, %p\n\n", sym_name, sym_tab);
+    printf("SYM PTR %s: %p\n", sym_name, sym_tab);
   symrec *ptr;
   ptr = (symrec *) malloc (sizeof (symrec));
   ptr -> name = (char *) malloc (strlen (sym_name) + 1);
@@ -24,10 +24,9 @@ symrec *putsym(char *sym_name, symrec *sym_tab, int func, int faddr){
 
 symrec *getsym(char *sym_name, symrec *sym_tab){
   symrec *ptr;
-  for (ptr = sym_tab; ptr != (symrec *) 0;
-       ptr = (symrec *)ptr->next)
-       if (strcmp (ptr->name,sym_name) == 0)
-           return ptr;
+  for (ptr = sym_tab; ptr != (symrec *) 0; ptr = (symrec *)ptr->next)
+          if (strcmp (ptr->name,sym_name) == 0)
+              return ptr;
   return 0;
 }
 

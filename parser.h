@@ -9,12 +9,14 @@ struct symrec
   int val; /* value of the VAR */
   struct symrec *next;    /* link field              */
   int len; /* Length of array. -1 if just a variable. */
+  int pos; /* position of parameter */
 };
 
 struct funcrec{
     char *name; /* name of the function */
     int params; /* number of parameters */
     int local_vars; /* number of local variables */
+    int fnum;
     struct symrec *f_symrec; /* each function has its own symbol table */
     struct funcrec *next; /* next(technically previous) function definition */
 };
@@ -40,7 +42,7 @@ funcrec *func_table;
 
 symrec *putsym();
 symrec *getsym();
-void putfunc();
+funcrec *putfunc();
 funcrec *getfunc();
 
 void arr_allocate(symrec *tptr, int size);

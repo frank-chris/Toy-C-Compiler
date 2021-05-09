@@ -4,9 +4,10 @@
 
 #include "parser.h"
 
-void putfunc(funcrec *ptr){
+funcrec *putfunc(funcrec *ptr){
   ptr -> next = (struct funcrec *)func_table;
   func_table = ptr;
+  return func_table;
 }
 
 

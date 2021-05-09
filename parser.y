@@ -7,10 +7,11 @@
 
 int whileStart = 0, End = 0, elseStart = 0;
 int count = 0;
-int temp = 0;
+int position = 0;
 symrec *sptr;
 symrec *cur_table;
 funcrec *fptr;
+int fnums = 0;
 int func = 0;
 int labelCount = 0;
 FILE *fp;
@@ -28,8 +29,8 @@ int arithmetic_type; /* Type of arithmetic op */
 struct symrec  *tptr;   /* For returning symbol-table pointers      */
 struct exptable  *expptr;   /* For returning expression pointers      */
 char var[200];
-char Code[10000];
-char smallCode[1000];
+char Code[1000];
+char smallCode[100];
 struct StmtNode *stmtptr;
 struct StmtsNode *stmtsptr;
 }
@@ -50,7 +51,7 @@ struct StmtsNode *stmtsptr;
 %token <logical_type> LOGICAL
 %token <arithmetic_type> ARITHMETIC
 %token <var> VAR
-%type <Code> local_variable_decl 
+%type <Code> local_variable_decl p_list
 %type <smallCode> local_decl 
 %type  <expptr>  exp bool_exp x
 %type <stmtsptr> stmts 
@@ -134,7 +135,10 @@ Store the current base address and the return value in registers
 function_decl:
         VAR{
         fptr = (funcrec *)malloc(sizeof(funcrec));
-        fptr -> name = $1;
+        fptr -> name = (char *)malloc((strlen($1) + 1));
+        strcpy(fptr -> name, $1);
+        fptr -> fnum = fnums;
+        fnums++;
         func = 1;
         }
         LPAREN{
@@ -147,23 +151,18 @@ function_decl:
         fptr -> local_vars = 0;
         }
         START local_variable_decl END{
-        printf("Num Local Variables: %d\n", fptr -> local_vars);
-        fflush(stdout);
-        printf("CurTable fl: %p\n", cur_table);
-        fflush(stdout);
-
         }
         stmts RBRACE{
         printf("Parameters: %d\nLocal Variables: %d\n", fptr -> params, fptr -> local_vars);
         fflush(stdout);
 
         $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
-        $$ -> type = 3; // type = 3 for function
-        sprintf($$ -> funCode, "%s", $10);
+        $$ -> type = 5; // type = 5 for function
+        sprintf($$ -> funCode, "func%d: %s", fptr -> fnum, $10);
         cur_table = sym_table;
-        //$$ -> func_body = $11;
+        $$ -> func_body = $13;
 
-        putfunc(fptr);
+        func_table = putfunc(fptr);
 
         func = 0;
         }
@@ -188,16 +187,13 @@ local_variable_decl:
                    }
                    |
                    {
-                   strcat($$, "");
+                   $$[0] = '\0';
                    }
                    ;
 
 local_decl:
           VAR ASSIGN NUM{
           cur_table = putsym($1, cur_table, 1, (fptr -> params + fptr -> local_vars + 1) * 4);
-          if(strcmp($1, "d") == 0){
-            printf("Next Ptr: %p\n", cur_table -> next -> name);
-          }
           fptr -> local_vars += 1;
           sprintf($$, "subu $sp, $sp, 4\nli $t0, %d\nsw $t0, ($sp)\n", $3);
           }
@@ -400,8 +396,6 @@ x:
  |
  VAR{
  $$ = (exptable *)malloc(sizeof(exptable));
-        printf("CurTable VAR: %p\n", cur_table);
-        fflush(stdout);
  sptr = getsym($1, cur_table);
  if(sptr == 0){
      printf("Variable %s not declared.\n", $1);
@@ -417,7 +411,27 @@ x:
  }
  $$ -> val = sptr -> val;
  }
+ |
+ VAR LPAREN p_list RPAREN{
+ funcrec *fptr_local = getfunc($1);
+ sprintf($$ -> code, "%s", $3);
+ }
  ;
+
+p_list:
+      p_list COMMA exp{
+      strcat($$, $3 -> code);
+      // Now t0 contains exp
+      sprintf($$, "subu $sp, $sp, 4\nsw $t0, ($sp)\n");
+      }
+      |
+      exp{
+      strcat($$, $1 -> code);
+      // t0 contains exp
+      sprintf($$, "subu $sp, $sp, 4\nsw $t0, ($sp)\n");
+      }
+      ;
+
 
 %%
 
@@ -468,6 +482,14 @@ void StmtTrav(stmtptr ptr){
     }
     else if(ptr -> type == 4){
         fprintf(fp, "%s\n",ptr -> scanCode);
+    }
+    else if(ptr -> type == 5){
+        nj = End;
+        End++;
+        fprintf(fp, "\n\nj End%d\n", nj);
+        fprintf(fp, "%s \n", ptr -> funCode);
+        StmtsTrav(ptr -> func_body);
+        fprintf(fp, "End%d:\n", nj);
     }
 }
 
