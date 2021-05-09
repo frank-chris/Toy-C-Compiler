@@ -10,12 +10,12 @@ This project has been made as a course project in the course CS-327: Compilers o
 
 ## Table of Contents 📃
 
-**[Requirements](#requirements-⚡)**<br>
-**[Compiling and Cleaning](#compiling-and-cleaning-▶️)**<br>
-**[Usage](#usage-⏩)**<br>
-**[Features](#features-⭐)**<br>
-**[Files and Folders](#files-and-folders-📁)**<br>
-**[References](#references-🔖)**<br>
+**[Requirements](#requirements-)**<br>
+**[Compiling and Cleaning](#compiling-and-cleaning-)**<br>
+**[Usage](#usage-)**<br>
+**[Features](#features-)**<br>
+**[Files and Folders](#files-and-folders-)**<br>
+**[References](#references-)**<br>
 
 
 ## Requirements ⚡
