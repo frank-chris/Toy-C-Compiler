@@ -2,10 +2,10 @@ f(a){
     start
     d = 5;
     end
-    d = 8 + 2;
+    d = (8 + 2) * a;
     return d + 1;
 }
 
 
-z = f(1);
+z = f(18);
 print(z);

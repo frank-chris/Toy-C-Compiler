@@ -302,6 +302,7 @@ scan_stmt:
          sptr = getsym($3, cur_table);
          if(sptr == 0){
              sptr = putsym($3, cur_table, 0, 0);
+             sptr -> val = 1;
              put = 1;
          }
          sprintf($$ -> scanCode, "\njal Scan \nsw $t0, %s($t8)", sptr -> addr);

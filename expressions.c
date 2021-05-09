@@ -91,6 +91,9 @@ char *gen_code(char *code1, char *code2, int opt){
 int compute_expr(int exp1, int exp2, int opt){
 
     int ans; // stores the result of the expression
+    printf("HELLO 1\n\n");
+    printf("%d %d", exp1, exp2);
+    fflush(stdout);
     switch(opt){
         case 1:
             ans = (exp1 < exp2);
@@ -129,10 +132,20 @@ int compute_expr(int exp1, int exp2, int opt){
             ans = (exp1 * exp2);
             break;
         case 13:
-            ans = (exp1 / exp2);
+            if(exp2 == 0){
+                printf("Division by 0\n");
+                fflush(stdout);
+            }
+            else
+                ans = (exp1 / exp2);
             break;
         case 14:
-            ans = (exp1 % exp2);
+            if(exp2 == 0){
+                printf("Modulus by 0\n");
+                fflush(stdout);
+            }
+            else
+                ans = (exp1 % exp2);
             break;
     }
 

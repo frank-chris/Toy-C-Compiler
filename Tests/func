@@ -6,7 +6,12 @@ f(a, b){
     a = a;
     b = b;
     c = a + b;
-    d = d;
+    if(c > 5){
+        print(10);
+    }
+    else{
+        print(100);
+    }
     print(c);
     return d * 2;
 }

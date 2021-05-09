@@ -1,0 +1,15 @@
+f(num){
+    start
+    ans = 1;
+    end;
+    if(num == 1){
+        ans = 1;
+    }
+    else{
+        ans = ans * f(num - 1);
+    }
+    return ans;
+}
+
+x = f(4);
+print(x);
