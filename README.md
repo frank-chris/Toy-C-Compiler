@@ -203,14 +203,14 @@ scan(a);
 
 ## Files and Folders 📁
 
-[`lexer.l`](lexer.l) - lexer
-[`parser.y`](parser.y) - parser 
-[`parser.h`](parser.h) - header file
-[`expressions.c`](expressions.c) - code generation for expressions
-[`sym_operations.c`](sym_operations.c) - definitions of functions that use the symbol table
-[`func_operations.c`](func_operations.c) - definitions of functions that use the function table
-[`Makefile`](Makefile) - Makefile
-[`Tests`](Tests) - Folder containing test files
+[`lexer.l`](lexer.l) - lexer  
+[`parser.y`](parser.y) - parser     
+[`parser.h`](parser.h) - header file  
+[`expressions.c`](expressions.c) - code generation for expressions  
+[`sym_operations.c`](sym_operations.c) - definitions of functions that use the symbol table  
+[`func_operations.c`](func_operations.c) - definitions of functions that use the function table  
+[`Makefile`](Makefile) - Makefile  
+[`Tests`](Tests) - Folder containing test files  
 
 
 
