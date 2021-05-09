@@ -45,13 +45,13 @@ struct StmtsNode *stmtsptr;
 %token ASSIGN DEFINE
 %token AND OR
 %token PLUS MINUS TIMES DIVIDE
-%token START END
+%token START END RETURN
 %token  <val> NUM        /* Integer   */
 %token <relational_type> RELATIONAL
 %token <logical_type> LOGICAL
 %token <arithmetic_type> ARITHMETIC
 %token <var> VAR
-%type <Code> local_variable_decl p_list
+%type <Code> local_variable_decl p_list return_st
 %type <smallCode> local_decl 
 %type  <expptr>  exp bool_exp x
 %type <stmtsptr> stmts 
@@ -77,7 +77,7 @@ prog:
     }
 
 stmts: 
-     stmt stmts {
+     stmt stmts{
      printf("Multiple\n");
      fflush(stdout);
      $$ = (struct StmtsNode *)malloc(sizeof(struct StmtsNode));
@@ -126,7 +126,7 @@ stmt:
 
 /*
 From top to bottom, a function will store-
-1) Base address of caller
+1) Base address of caller (Previous state of stack pointer)
 2) Return address
 3) Parameters
 4) Local variables
@@ -152,21 +152,37 @@ function_decl:
         }
         START local_variable_decl END{
         }
-        stmts RBRACE{
-        printf("Parameters: %d\nLocal Variables: %d\n", fptr -> params, fptr -> local_vars);
-        fflush(stdout);
+        stmts return_st RBRACE{
 
         $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
         $$ -> type = 5; // type = 5 for function
-        sprintf($$ -> funCode, "func%d: %s", fptr -> fnum, $10);
+        sprintf($$ -> funCode, "func%d: %s \nsw $ra, %d($sp) \n", fptr -> fnum, $10, 4 * (fptr -> params + fptr -> local_vars));
+        sprintf($$ -> funCode, "%ssubu $sp, $sp, 4 \nli $t2, %d \nsw $t2, ($sp)", $$ -> funCode, 4 * (fptr -> params + fptr -> local_vars + 2));
         cur_table = sym_table;
         $$ -> func_body = $13;
+        sprintf($$ -> ReturnCode, "%s", $14);
 
         func_table = putfunc(fptr);
 
         func = 0;
         }
         ;
+
+return_st:
+         RETURN exp SEMICOLON{
+         strcpy($$, $2 -> code);
+         /*
+         We have computed return value into t0
+         This is our invariant.
+
+         Apart from this, we must 
+         1) Restore the stack pointer
+         2) Jump to the return address stored by us
+         */
+
+         int tot_vars = fptr -> params + fptr -> local_vars;
+         sprintf($$, "lw $ra, %d($sp) \nli $t2, %d \nadd $sp $sp $t2 \n jr $ra \n", (tot_vars + 1) * 4, (tot_vars + 2) * 4);
+         };
 
 parameter_list:
               parameter_list COMMA VAR{
@@ -231,12 +247,12 @@ assign_stmt:
                put = 1;
            }
            if(func == 0){
-               sprintf($$ -> assgnCode, "%s\nsw $t0,%s($t8)\n", $3 -> code, sptr -> addr); // $3 will be t0, its value will be stored at the address(mem location) of the variable.
+               sprintf($$ -> assgnCode, "%ssw $t0,%s($t8)\n", $3 -> code, sptr -> addr); // $3 will be t0, its value will be stored at the address(mem location) of the variable.
            }
            else{
                int tot_vars = fptr -> params + fptr -> local_vars;
                int faddr = (tot_vars * 4) - atoi(sptr -> addr);
-               sprintf($$ -> assgnCode, "%s\nsw $t0,%d($sp)\n", $3 -> code, faddr); // $3 will be t0, its value will be stored at the address(mem location) of the variable.
+               sprintf($$ -> assgnCode, "%ssw $t0,%d($sp)\n", $3 -> code, faddr + 4); // $3 will be t0, its value will be stored at the address(mem location) of the variable.
            }
            sptr -> val  = $3 -> val;
            if(put == 1)
@@ -415,8 +431,7 @@ x:
  else{
      int tot_vars = fptr -> params + fptr -> local_vars;
      int faddr = (tot_vars * 4) - atoi(sptr -> addr);
-     printf("Variable to address- %s: %d\n", $1, faddr);
-     sprintf($$ -> code, "lw $t0, %d($sp)\n", faddr);
+     sprintf($$ -> code, "lw $t0, %d($sp)\n", faddr + 4);
  }
  $$ -> val = sptr -> val;
  }
@@ -424,7 +439,8 @@ x:
  VAR LPAREN p_list RPAREN{
  funcrec *fptr_local = getfunc($1);
  $$ = (exptable *)malloc(sizeof(exptable));
- sprintf($$ -> code, "%s \njal func%d", $3, fptr_local -> fnum);
+ sprintf($$ -> code, "\nsubu $sp, $sp, 4\n %s \njal func%d\n", $3, fptr_local -> fnum);
+ // First subu is for storing the return address
  }
  ;
 
@@ -499,6 +515,7 @@ void StmtTrav(stmtptr ptr){
         fprintf(fp, "\n\nj End%d\n", nj);
         fprintf(fp, "%s \n", ptr -> funCode);
         StmtsTrav(ptr -> func_body);
+        fprintf(fp, "%s \n", ptr -> ReturnCode);
         fprintf(fp, "End%d:\n", nj);
     }
 }

@@ -5,15 +5,18 @@ f(a, b){
     end
     a = a;
     b = b;
-    c = c;
+    c = a + b;
     d = d;
     print(c);
+    return d;
 }
 
 g(x, y){
     start
     end
     print(1);
+    return 2 + 2;
 }
 
 z = f(3, 4);
+print(z);

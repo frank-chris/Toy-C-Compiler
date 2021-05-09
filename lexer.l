@@ -30,6 +30,7 @@ id {letter}({letter}|{digit})*
 "print" {printf("PRINT\n"); return PRINT;}
 "start" {return START;}
 "end" {return END;}
+"return" {return RETURN;}
 {id} {printf("ID\n"); sprintf(yylval.var, "%s", yytext); return VAR;}
 {number} {printf("NUM\n"); sscanf(yytext,"%d",&yylval.val); return NUM;}
 ";" {printf("SEMICOLON\n"); return SEMICOLON;}

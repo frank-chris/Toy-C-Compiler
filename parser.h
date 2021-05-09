@@ -67,6 +67,7 @@ struct StmtNode{
    int type;
    char InitCode[1000];
    char JumpCode[2000];
+   char ReturnCode[1000];
    char assgnCode[1000];
    char printCode[1000];
    char scanCode[1000];
