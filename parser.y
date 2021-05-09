@@ -12,7 +12,6 @@ symrec *sptr;
 symrec *cur_table;
 funcrec *fptr;
 int fnums = 0;
-int func = 0;
 int labelCount = 0;
 FILE *fp;
 struct StmtsNode *final;
@@ -161,6 +160,7 @@ function_decl:
         cur_table = sym_table;
         $$ -> func_body = $13;
         sprintf($$ -> ReturnCode, "%s", $14);
+        printf("\nReturn Code\n%s\n\n", $$ -> ReturnCode);
 
         func_table = putfunc(fptr);
 
@@ -170,6 +170,7 @@ function_decl:
 
 return_st:
          RETURN exp SEMICOLON{
+         printf("\n\nRETURN CODE IS HERE\n%s\n\n", $2 -> code);
          strcpy($$, $2 -> code);
          /*
          We have computed return value into t0
@@ -181,7 +182,9 @@ return_st:
          */
 
          int tot_vars = fptr -> params + fptr -> local_vars;
-         sprintf($$, "lw $ra, %d($sp) \nli $t2, %d \nadd $sp $sp $t2 \n jr $ra \n", (tot_vars + 1) * 4, (tot_vars + 2) * 4);
+         char intermediate[1000];
+         sprintf(intermediate, "lw $ra, %d($sp) \nli $t2, %d \nadd $sp $sp $t2 \njr $ra \n", (tot_vars + 1) * 4, (tot_vars + 2) * 4);
+         strcat($$, intermediate);
          };
 
 parameter_list:
@@ -375,6 +378,7 @@ exp:
    x{
    $$ = (exptable *)malloc(sizeof(exptable));
    sprintf($$ -> code, "%s", $1 -> code);
+   printf("\n\nX is \n%s\n\n", $$ -> code);
    $$ -> val = $1 -> val;
    count ^= 1;
    }
@@ -524,6 +528,7 @@ void StmtTrav(stmtptr ptr){
 int main()
 {
     Adr = 0;
+    func = 0;
     sym_table = (symrec *)0;
     cur_table = sym_table;
     func_table = (funcrec *)0;

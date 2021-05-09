@@ -8,7 +8,7 @@ f(a, b){
     c = a + b;
     d = d;
     print(c);
-    return d;
+    return d * 2;
 }
 
 g(x, y){

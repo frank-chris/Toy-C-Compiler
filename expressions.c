@@ -67,7 +67,9 @@ char *gen_code(char *code1, char *code2, int opt){
     // Store t0 here
     sprintf(code, "%s%s\n", code, "sw $t0 ($sp)");
 
+    sprintf(code, "%s%s\n", code, "addi $sp, $sp, 4");
     sprintf(code, "%s%s\n", code, code2); // All instructions to load the second expression into t0
+    sprintf(code, "%s%s\n", code, "subu $sp, $sp, 4");
 
     // Repeat steps
     sprintf(code, "%s%s\n", code, "subu $sp, $sp, 4");

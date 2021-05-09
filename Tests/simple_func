@@ -1,0 +1,11 @@
+f(a){
+    start
+    d = 5;
+    end
+    d = 8 + 2;
+    return d + 1;
+}
+
+
+z = f(1);
+print(z);

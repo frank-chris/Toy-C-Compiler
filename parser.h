@@ -38,6 +38,7 @@ typedef struct funcrec funcrec;
 int Adr;
 symrec *sym_table;
 funcrec *func_table;
+int func;
 
 
 symrec *putsym();
