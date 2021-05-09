@@ -7,6 +7,10 @@
 
 int whileStart = 0, End = 0, elseStart = 0;
 int count = 0;
+symrec *sptr;
+symrec *cur_table;
+funcrec *fptr;
+int func = 0;
 int labelCount = 0;
 FILE *fp;
 struct StmtsNode *final;
@@ -16,13 +20,15 @@ void StmtsTrav(stmtsptr ptr);
 void StmtTrav(stmtptr ptr);
 %}
 %union {
-int val;  /* For returning numbers.                   */
+int val;  /* For returning numbers. */
 int relational_type; /*Type of relational op */
 int logical_type; /*Type of logical op */
 int arithmetic_type; /* Type of arithmetic op */
 struct symrec  *tptr;   /* For returning symbol-table pointers      */
 struct exptable  *expptr;   /* For returning expression pointers      */
-char nData[200];
+char var[200];
+char Code[1000];
+char smallCode[100];
 struct StmtNode *stmtptr;
 struct StmtsNode *stmtsptr;
 }
@@ -33,7 +39,7 @@ struct StmtsNode *stmtsptr;
 %token TRUE FALSE
 %token  WHILE IF ELSE FOR
 %token SCAN PRINT
-%token SEMICOLON
+%token SEMICOLON COMMA
 %token ASSIGN DEFINE
 %token AND OR
 %token PLUS MINUS TIMES DIVIDE
@@ -41,11 +47,13 @@ struct StmtsNode *stmtsptr;
 %token <relational_type> RELATIONAL
 %token <logical_type> LOGICAL
 %token <arithmetic_type> ARITHMETIC
-%token <tptr> VAR
+%token <var> VAR
+%type <Code> local_variable_decl 
+%type <smallCode> local_decl 
 %type  <expptr>  exp bool_exp x
-%type <stmtsptr> stmts
+%type <stmtsptr> stmts 
 %type <stmtptr> stmt
-%type <stmtptr> array_decl assign_stmt print_stmt scan_stmt if_stmt while_stmt
+%type <stmtptr> function_decl array_decl assign_stmt print_stmt scan_stmt if_stmt while_stmt
 
 %right ASSIGN
 %left MINUS PLUS
@@ -82,6 +90,10 @@ stmts:
      ;
 
 stmt:
+    function_decl{
+    $$ = $1;
+    }
+    |
     array_decl SEMICOLON{
     $$ = $1;
     }
@@ -107,14 +119,93 @@ stmt:
     }
     ;
 
+/*
+From top to bottom, a function will store-
+1) Base address of caller
+2) Return address
+3) Parameters
+4) Local variables
+Store the current base address and the return value in registers
+*/
+function_decl:
+        VAR{
+        fptr = (funcrec *)malloc(sizeof(funcrec));
+        fptr -> name = $1;
+        func = 1;
+        }
+        LPAREN{
+        fptr -> f_symrec = (symrec *)malloc(sizeof(symrec));
+        fptr -> params = 0;
+        }
+        parameter_list RPAREN LBRACE{
+        fptr -> local_vars = 0;
+        }
+        local_variable_decl{
+        sym_table = cur_table;
+        cur_table = fptr -> f_symrec;
+        }
+        stmts RBRACE{
+        cur_table = sym_table;
+
+        putfunc(fptr);
+
+        $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
+        $$ -> type = 3; // type = 3 for function
+        sprintf($$ -> funCode, "%s", $9);
+        $$ -> func_body = $11;
+
+        func = 0;
+        }
+        ;
+
+parameter_list:
+              |
+              VAR COMMA parameter_list{
+              putsym($1, fptr -> f_symrec, 1, (fptr -> params + 1) * 4);
+              fptr -> params += 1;
+              }
+              |
+              VAR{
+              putsym($1, fptr -> f_symrec, 1, (fptr -> params + 1) * 4);
+              fptr -> params += 1;
+              }
+              ;
+
+local_variable_decl:
+                   local_decl local_variable_decl {
+                   strcat($$, $1);
+                   strcat($$, $2);
+                   }
+                   |
+                   local_decl{
+                   strcat($$, $1);
+                   }
+                   |
+                   {
+                   sprintf($$, "%s", "");
+                   }
+                   ;
+
+local_decl:
+          VAR ASSIGN NUM SEMICOLON{
+          putsym($1, fptr -> f_symrec, 1, (fptr -> params + fptr -> local_vars + 1) * 4);
+          fptr -> local_vars += 1;
+          sprintf($$, "subu $sp, $sp, 4\nli $t0, %d\nsw $t0, ($sp)\n", $3);
+          }
+          ;
+
+
 array_decl:
           VAR LBRACK exp RBRACK{
           $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
           $$ -> type = 0; // type = 0 for declaration and assignment
           
+          sptr = getsym($1, cur_table);
+          if(sptr == 0)
+              sptr = putsym($1, cur_table, 0, 0);
           // Allocate space equal to size of exp
-          arr_allocate($1, $3 -> val);
-          $1 -> len = $3 -> val;
+          arr_allocate(sptr, $3 -> val);
+          sptr -> len = $3 -> val;
           }
           ;
 
@@ -123,9 +214,15 @@ assign_stmt:
            VAR ASSIGN exp{
            $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
            $$ -> type = 0; // type = 0 for declaration and assignment
-           count = 0;
-           sprintf($$ -> assgnCode, "%s\nsw $t0,%s($t8)\n", $3 -> code, $1 -> addr); // $3 will be t0, its value will be stored at the address(mem location) of the variable.
-           $1 -> val  = $3 -> val;
+           sptr = getsym($1, cur_table);
+           if(sptr == 0){
+               sptr = putsym($1, cur_table, 0, 0);
+           }
+ printf("Name: %s\n", $1);
+ fflush(stdout);
+           sprintf($$ -> assgnCode, "%s\nsw $t0,%s($t8)\n", $3 -> code, sptr -> addr); // $3 will be t0, its value will be stored at the address(mem location) of the variable.
+           sptr -> val  = $3 -> val;
+           cur_table = sptr;
            $$ -> while_body = NULL;
            $$ -> if_body = NULL;
            $$ -> else_body = NULL;
@@ -134,11 +231,11 @@ assign_stmt:
            VAR LBRACK exp RBRACK ASSIGN exp{
            $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
            $$ -> type = 0; // type = 0 for declaration and assignment
-           count = 0;
+           sptr = getsym($1, cur_table);
            sprintf($$ -> assgnCode, "%s\n", $3 -> code);
            sprintf($$ -> assgnCode, "%ssll $t0, $t0, 2\n", $$ -> assgnCode); // Multiply by 4
            sprintf($$ -> assgnCode, "%sadd $t0, $t0, $t8\n", $$ -> assgnCode); // Add the global base into $t0
-           sprintf($$ -> assgnCode, "%sadd $t0, $t0, %s\n", $$ -> assgnCode, $1 -> addr); // Add the base address of VAR into $t2
+           sprintf($$ -> assgnCode, "%sadd $t0, $t0, %s\n", $$ -> assgnCode, sptr -> addr); // Add the base address of VAR into $t2
 
            sprintf($$ -> assgnCode, "%s%s\n", $$ -> assgnCode, "subu $sp, $sp, 4");
            sprintf($$ -> assgnCode, "%s%s\n", $$ -> assgnCode, "sw $t0 4($sp)"); // Store calculated address into the stack
@@ -159,10 +256,10 @@ assign_stmt:
 scan_stmt:
          SCAN LPAREN VAR RPAREN{
          // Don't use the code returned by VAR
-         count = 0; // We have to set count back to 0
          $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
          $$ -> type = 4; // type = 4 for scan
-         sprintf($$ -> scanCode, "\njal Scan \nsw $t0, %s($t8)", $3 -> addr);
+         sptr = getsym($3, cur_table);
+         sprintf($$ -> scanCode, "\njal Scan \nsw $t0, %s($t8)", sptr -> addr);
          }
 
 print_stmt:
@@ -252,38 +349,42 @@ exp:
 x:
  NUM{
  $$ = (exptable *)malloc(sizeof(exptable));
- //sprintf($$ -> code, "li $t%d, %d\n", count, $1);
  sprintf($$ -> code, "li $t0, %d\n", $1);
  $$ -> val = $1;
- count ^= 1;
  }
  |
  VAR LBRACK exp RBRACK{
  // There are two ways of doing this
  $$ = (exptable *)malloc(sizeof(exptable));
- sprintf($$ -> code, "%s\nsll $t0, $t0, 2\nadd $t0, $t0, $t8\nadd $t0, $t0, %s\nlw $t0, ($t0)\n", $3 -> code, $1 -> addr);
+ sptr = getsym($1, cur_table);
+ if(func == 0){
+     sprintf($$ -> code, "%s\nsll $t0, $t0, 2\nadd $t0, $t0, $t8\nadd $t0, $t0, %s\nlw $t0, ($t0)\n", $3 -> code, sptr -> addr);
+ }
+ else{
+     printf("Arrays  in functions\n");
+ }
 
  $$ -> val = -1;
- count ^= 1;
- /* 
- Alternate method-
- sprintf($$ -> code, "li $t2, %d\n", $3); // Store the offset into $t2
- sprintf($$ -> code, "sll $t2 $t2 2\n");
- sprintf($$ -> code, "li $t%d %s\n", count, $1 -> addr);
- sprintf($$ -> code, "add $t%d $t%d $t2\n", count, count);
- sprintf($$ -> code, "add $t%d $t%d $t8\n", count);
- sprintf($$ -> code, "lw $t%d, ($t%d)\n", count, count);
- */
-
- // Set to -1, invalid
  }
  |
  VAR{
+   printf("HEYY%s\n", cur_table -> addr);
+   fflush(stdout);
  $$ = (exptable *)malloc(sizeof(exptable));
- //sprintf($$ -> code, "lw $t%d, %s($t8)\n", count, $1 -> addr);
- sprintf($$ -> code, "lw $t0, %s($t8)\n", $1 -> addr);
- $$ -> val = $1 -> val;
- count ^= 1;
+ sptr = getsym($1, cur_table);
+ if(sptr == 0){
+     printf("Variable not declared.\n");
+     fflush(stdout);
+ }
+ if(func == 0){
+     sprintf($$ -> code, "lw $t0, %s($t8)\n", sptr -> addr);
+ }
+ else{
+     int tot_vars = fptr -> params + fptr -> local_vars;
+     int faddr = (tot_vars * 4) - atoi(sptr -> addr);
+     sprintf($$ -> code, "lw $t0, %d($sp)\n", faddr);
+ }
+ $$ -> val = sptr -> val;
  }
  ;
 
@@ -340,10 +441,12 @@ void StmtTrav(stmtptr ptr){
 }
 
 
-int main ()
+int main()
 {
     Adr = 0;
     sym_table = (symrec *)0;
+    cur_table = sym_table;
+    func_table = (funcrec *)0;
     fp=fopen("asmb.asm","w");
     fprintf(fp, ".data\n\n.text\nli $t8,268500992\n");
     fprintf(fp, "\nj PrintEnd \nPrint: \nli $v0, 1 \nmove $a0, $t0 \nsyscall \nli $v0, 11 \nla $a0, '\\n' \nsyscall \njr $ra \nPrintEnd: \n");

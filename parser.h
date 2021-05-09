@@ -11,13 +11,23 @@ struct symrec
   int len; /* Length of array. -1 if just a variable. */
 };
 
+struct funcrec{
+    char *name; /* name of the function */
+    int params; /* number of parameters */
+    int local_vars; /* number of local variables */
+    struct symrec *f_symrec; /* each function has its own symbol table */
+    struct funcrec *next; /* next(technically previous) function definition */
+};
+
 struct exptable{
     char code[2000];
     int val;
 };
 
+
 typedef struct symrec symrec;
 typedef struct exptable exptable;
+typedef struct funcrec funcrec;
 
 
 
@@ -25,10 +35,14 @@ typedef struct exptable exptable;
 
 int Adr;
 symrec *sym_table;
+funcrec *func_table;
 
 
 symrec *putsym();
 symrec *getsym();
+void putfunc();
+funcrec *getfunc();
+
 void arr_allocate(symrec *tptr, int size);
 char *gen_code(char *code1, char *code2, int opt);
 int compute_expr(int exp1, int exp2, int opt);
@@ -54,11 +68,12 @@ struct StmtNode{
    char assgnCode[1000];
    char printCode[1000];
    char scanCode[1000];
+   char funCode[1000];
    struct StmtsNode *while_body;
    struct StmtsNode *if_body;
    struct StmtsNode *else_body;
+   struct StmtsNode *func_body;
 };
-
 
 
 

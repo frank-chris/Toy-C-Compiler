@@ -28,9 +28,10 @@ id {letter}({letter}|{digit})*
 "false" {printf("FALSE\n"); return FALSE;}
 "scan" {printf("SCAN\n"); return SCAN;}
 "print" {printf("PRINT\n"); return PRINT;}
-{id} {printf("ID\n"); symrec *s; s = getsym(yytext); if(s == 0) s = putsym(yytext); yylval.tptr = s; return VAR;}
+{id} {printf("ID\n"); sprintf(yylval.var, "%s", yytext); return VAR;}
 {number} {printf("NUM\n"); sscanf(yytext,"%d",&yylval.val); return NUM;}
 ";" {printf("SEMICOLON\n"); return SEMICOLON;}
+"," {printf("COMMA\n"); return COMMA;}
 ":=" {printf("DEFINE\n"); return DEFINE;}
 "=" {printf("ASSIGN\n"); return ASSIGN;}
 
