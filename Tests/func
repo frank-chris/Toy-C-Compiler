@@ -3,6 +3,10 @@ f(a, b){
     c = 0;
     d = 5;
     end
+    a = a;
+    b = b;
+    c = c;
+    d = d;
     print(c);
 }
 
@@ -12,3 +16,4 @@ g(x, y){
     print(1);
 }
 
+z = f(3, 4);

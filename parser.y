@@ -230,7 +230,14 @@ assign_stmt:
                sptr = putsym($1, cur_table, 0, 0);
                put = 1;
            }
-           sprintf($$ -> assgnCode, "%s\nsw $t0,%s($t8)\n", $3 -> code, sptr -> addr); // $3 will be t0, its value will be stored at the address(mem location) of the variable.
+           if(func == 0){
+               sprintf($$ -> assgnCode, "%s\nsw $t0,%s($t8)\n", $3 -> code, sptr -> addr); // $3 will be t0, its value will be stored at the address(mem location) of the variable.
+           }
+           else{
+               int tot_vars = fptr -> params + fptr -> local_vars;
+               int faddr = (tot_vars * 4) - atoi(sptr -> addr);
+               sprintf($$ -> assgnCode, "%s\nsw $t0,%d($sp)\n", $3 -> code, faddr); // $3 will be t0, its value will be stored at the address(mem location) of the variable.
+           }
            sptr -> val  = $3 -> val;
            if(put == 1)
                cur_table = sptr;
@@ -369,6 +376,7 @@ exp:
    }
    ;
 
+// t0 should contain the result
 x:
  NUM{
  $$ = (exptable *)malloc(sizeof(exptable));
@@ -407,6 +415,7 @@ x:
  else{
      int tot_vars = fptr -> params + fptr -> local_vars;
      int faddr = (tot_vars * 4) - atoi(sptr -> addr);
+     printf("Variable to address- %s: %d\n", $1, faddr);
      sprintf($$ -> code, "lw $t0, %d($sp)\n", faddr);
  }
  $$ -> val = sptr -> val;
@@ -414,7 +423,8 @@ x:
  |
  VAR LPAREN p_list RPAREN{
  funcrec *fptr_local = getfunc($1);
- sprintf($$ -> code, "%s", $3);
+ $$ = (exptable *)malloc(sizeof(exptable));
+ sprintf($$ -> code, "%s \njal func%d", $3, fptr_local -> fnum);
  }
  ;
 
@@ -422,13 +432,13 @@ p_list:
       p_list COMMA exp{
       strcat($$, $3 -> code);
       // Now t0 contains exp
-      sprintf($$, "subu $sp, $sp, 4\nsw $t0, ($sp)\n");
+      strcat($$, "subu $sp, $sp, 4\nsw $t0, ($sp)\n");
       }
       |
       exp{
-      strcat($$, $1 -> code);
+      strcpy($$, $1 -> code);
       // t0 contains exp
-      sprintf($$, "subu $sp, $sp, 4\nsw $t0, ($sp)\n");
+      strcat($$, "subu $sp, $sp, 4\nsw $t0, ($sp)\n");
       }
       ;
 
