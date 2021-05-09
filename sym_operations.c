@@ -5,6 +5,7 @@
 #include "parser.h"
 
 symrec *putsym(char *sym_name, symrec *sym_tab, int func, int faddr){
+    printf("NAMESSS: %s, %p\n\n", sym_name, sym_tab);
   symrec *ptr;
   ptr = (symrec *) malloc (sizeof (symrec));
   ptr -> name = (char *) malloc (strlen (sym_name) + 1);

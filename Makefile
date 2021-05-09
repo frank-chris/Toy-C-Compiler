@@ -1,6 +1,6 @@
 build: flex bison obj
 	@echo "Building"
-	gcc -lfl parser.tab.o expressions.o func_operations.o sym_operations.o lex.yy.o -o C
+	gcc -lfl parser.tab.o expressions.o func_operations.o sym_operations.o lex.yy.o -o C -g
 
 flex: lexer.l
 	@echo "Building Lexer..."

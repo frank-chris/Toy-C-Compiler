@@ -28,6 +28,8 @@ id {letter}({letter}|{digit})*
 "false" {printf("FALSE\n"); return FALSE;}
 "scan" {printf("SCAN\n"); return SCAN;}
 "print" {printf("PRINT\n"); return PRINT;}
+"start" {return START;}
+"end" {return END;}
 {id} {printf("ID\n"); sprintf(yylval.var, "%s", yytext); return VAR;}
 {number} {printf("NUM\n"); sscanf(yytext,"%d",&yylval.val); return NUM;}
 ";" {printf("SEMICOLON\n"); return SEMICOLON;}

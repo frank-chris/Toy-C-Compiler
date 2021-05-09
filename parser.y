@@ -7,6 +7,7 @@
 
 int whileStart = 0, End = 0, elseStart = 0;
 int count = 0;
+int temp = 0;
 symrec *sptr;
 symrec *cur_table;
 funcrec *fptr;
@@ -27,8 +28,8 @@ int arithmetic_type; /* Type of arithmetic op */
 struct symrec  *tptr;   /* For returning symbol-table pointers      */
 struct exptable  *expptr;   /* For returning expression pointers      */
 char var[200];
-char Code[1000];
-char smallCode[100];
+char Code[10000];
+char smallCode[1000];
 struct StmtNode *stmtptr;
 struct StmtsNode *stmtsptr;
 }
@@ -43,6 +44,7 @@ struct StmtsNode *stmtsptr;
 %token ASSIGN DEFINE
 %token AND OR
 %token PLUS MINUS TIMES DIVIDE
+%token START END
 %token  <val> NUM        /* Integer   */
 %token <relational_type> RELATIONAL
 %token <logical_type> LOGICAL
@@ -53,7 +55,7 @@ struct StmtsNode *stmtsptr;
 %type  <expptr>  exp bool_exp x
 %type <stmtsptr> stmts 
 %type <stmtptr> stmt
-%type <stmtptr> function_decl array_decl assign_stmt print_stmt scan_stmt if_stmt while_stmt
+%type <stmtptr> array_decl assign_stmt print_stmt scan_stmt if_stmt while_stmt function_decl
 
 %right ASSIGN
 %left MINUS PLUS
@@ -76,6 +78,7 @@ prog:
 stmts: 
      stmt stmts {
      printf("Multiple\n");
+     fflush(stdout);
      $$ = (struct StmtsNode *)malloc(sizeof(struct StmtsNode));
      $$ -> singl = 0;
      $$ -> left = $1, $$ -> right = $2;
@@ -83,6 +86,7 @@ stmts:
      |
      stmt {
      printf("Single\n");
+     fflush(stdout);
      $$ = (struct StmtsNode *) malloc(sizeof(struct StmtsNode));
      $$ -> singl = 1;
      $$ -> left = $1, $$ -> right = NULL;
@@ -136,60 +140,64 @@ function_decl:
         LPAREN{
         fptr -> f_symrec = (symrec *)malloc(sizeof(symrec));
         fptr -> params = 0;
-
         sym_table = cur_table;
         cur_table = fptr -> f_symrec;
         }
         parameter_list RPAREN LBRACE{
         fptr -> local_vars = 0;
         }
-        local_variable_decl{
+        START local_variable_decl END{
+        printf("Num Local Variables: %d\n", fptr -> local_vars);
+        fflush(stdout);
+        printf("CurTable fl: %p\n", cur_table);
+        fflush(stdout);
+
         }
         stmts RBRACE{
-        cur_table = sym_table;
-
-        putfunc(fptr);
+        printf("Parameters: %d\nLocal Variables: %d\n", fptr -> params, fptr -> local_vars);
+        fflush(stdout);
 
         $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
         $$ -> type = 3; // type = 3 for function
-        sprintf($$ -> funCode, "%s", $9);
-        $$ -> func_body = $11;
+        sprintf($$ -> funCode, "%s", $10);
+        cur_table = sym_table;
+        //$$ -> func_body = $11;
+
+        putfunc(fptr);
 
         func = 0;
         }
         ;
 
 parameter_list:
-              |
-              VAR COMMA parameter_list{
-              cur_table = putsym($1, fptr -> f_symrec, 1, (fptr -> params + 1) * 4);
+              parameter_list COMMA VAR{
+              cur_table = putsym($3, cur_table, 1, (fptr -> params + 1) * 4);
               fptr -> params += 1;
               }
               |
               VAR{
-              cur_table = putsym($1, fptr -> f_symrec, 1, (fptr -> params + 1) * 4);
+              cur_table = putsym($1, cur_table, 1, (fptr -> params + 1) * 4);
               fptr -> params += 1;
               }
+              |
               ;
 
 local_variable_decl:
-                   local_decl local_variable_decl {
-                   strcat($$, $1);
+                   local_variable_decl local_decl SEMICOLON{
                    strcat($$, $2);
                    }
                    |
-                   local_decl{
-                   strcat($$, $1);
-                   }
-                   |
                    {
-                   sprintf($$, "%s", "");
+                   strcat($$, "");
                    }
                    ;
 
 local_decl:
-          VAR ASSIGN NUM SEMICOLON{
-          cur_table = putsym($1, fptr -> f_symrec, 1, (fptr -> params + fptr -> local_vars + 1) * 4);
+          VAR ASSIGN NUM{
+          cur_table = putsym($1, cur_table, 1, (fptr -> params + fptr -> local_vars + 1) * 4);
+          if(strcmp($1, "d") == 0){
+            printf("Next Ptr: %p\n", cur_table -> next -> name);
+          }
           fptr -> local_vars += 1;
           sprintf($$, "subu $sp, $sp, 4\nli $t0, %d\nsw $t0, ($sp)\n", $3);
           }
@@ -392,6 +400,8 @@ x:
  |
  VAR{
  $$ = (exptable *)malloc(sizeof(exptable));
+        printf("CurTable VAR: %p\n", cur_table);
+        fflush(stdout);
  sptr = getsym($1, cur_table);
  if(sptr == 0){
      printf("Variable %s not declared.\n", $1);

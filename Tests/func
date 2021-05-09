@@ -1,0 +1,9 @@
+f(a, b){
+    start
+    c = 0;
+    d = 5;
+    end
+    print(c);
+}
+
+x = 0;
