@@ -1,0 +1,19 @@
+gcd(x, y){
+    start
+    rem = 0;
+    ans = 0;
+    end
+    rem = x % y;
+    if(rem == 0){
+        ans = y;
+    }
+    else{
+        ans = gcd(y, rem);
+    }
+    return ans;
+}
+
+scan(a);
+scan(b);
+z = gcd(a, b);
+print(z);

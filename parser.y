@@ -524,8 +524,8 @@ x:
  else{
      int tot_vars = fptr -> params + fptr -> local_vars;
      int faddr = (tot_vars * 4) - atoi(sptr -> addr);
-     if(func == 1 && plist == 1)
-         sprintf($$ -> code, "lw $t0, %d($sp)\n", faddr + 8);
+     if(func == 1 && plist != 0)
+         sprintf($$ -> code, "lw $t0, %d($sp)\n", faddr + 4 + plist * 4);
      else
          sprintf($$ -> code, "lw $t0, %d($sp)\n", faddr + 4);
  }
@@ -549,12 +549,14 @@ x:
 
 p_list:
       p_list COMMA exp{
+      plist++;
       strcat($$, $3 -> code);
       // Now t0 contains exp
       strcat($$, "subu $sp, $sp, 4\nsw $t0, ($sp)\n");
       }
       |
       exp{
+      plist++;
       strcpy($$, $1 -> code);
       // t0 contains exp
       strcat($$, "subu $sp, $sp, 4\nsw $t0, ($sp)\n");

@@ -14,5 +14,6 @@ f(n){
     return a;
 }
 
-x = f(7);
+scan(inp);
+x = f(inp);
 print(x);
