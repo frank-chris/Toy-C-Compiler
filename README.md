@@ -92,7 +92,10 @@ Variables can be declared and assigned as follows:
 a = 1;
 ```
 There is no separate declaration for variables. The first time it appears will be taken as the declaration.
+
 ### Expressions
+
+Complex expressions involving more than 2 terms are supported. Boolean expressions are also supported.
 
 #### Arithmetic operators (+, -, *, /, %)
 
@@ -135,6 +138,8 @@ e = a ^ c;       // true
 
 ### Loops - for, while
 
+For and while loops and their nested variants are supported.
+
 #### for
 
 ```C
@@ -157,6 +162,8 @@ while(a > 10)
 
 ### Conditional - if else
 
+If else and its nested variant is supported.
+
 ```C
 a = 3;
 b = 20;
@@ -178,27 +185,56 @@ else
 }
 ```
 
+### Goto
+```C
+a = 23;
+goto Label:
+a = a + 2;
+Label:
+a = a + 3;      // a becomes 26, not 25
+```
+
+
 ### Arrays
 
-```C
+#### Array Declaration
 
+Size of the array being declared can be an expression.
+```C
+a = 23;
+b[a + 2];       // array of size 25 declared
 ```
+
+#### Array Usage
+```C
+b[2] = 27;
+d = b[2] + 3;   // d = 30
+```
+
 ### Functions (recursion allowed)
-
+Functions and recursive functions are supported.
+#### Function Declaration
 ```C
 
 ```
-### Output - print
 
+#### Function Call
+```C
+
+```
+
+### Output - print
+Printing expressions is supported.
 ```C
 a = 2;
 b = 34;
-print(a + b);
+print(a + b);   // prints 36
 ```
 
 ### Input - scan
+Reading input into a variable is also supported.
 ```C
-scan(a);
+scan(a);    // takes input into a
 ```
 
 ## Files and Folders 📁
