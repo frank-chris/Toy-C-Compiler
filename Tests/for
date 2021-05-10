@@ -1,0 +1,4 @@
+scan(l);
+for( x = 1; x <= l; x = x + 1;){
+    print(2 * x);
+}

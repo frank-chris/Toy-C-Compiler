@@ -55,7 +55,7 @@ struct StmtsNode *stmtsptr;
 %type  <expptr>  exp bool_exp x
 %type <stmtsptr> stmts 
 %type <stmtptr> stmt
-%type <stmtptr> array_decl assign_stmt print_stmt scan_stmt if_stmt while_stmt function_decl
+%type <stmtptr> array_decl assign_stmt print_stmt scan_stmt if_stmt while_stmt function_decl for_stmt
 
 %right ASSIGN
 %left MINUS PLUS
@@ -119,6 +119,10 @@ stmt:
     }
     |
     while_stmt{
+    $$ = $1;
+    }
+    |
+    for_stmt{
     $$ = $1;
     }
     ;
@@ -335,7 +339,7 @@ if_stmt:
 while_stmt:
           WHILE LPAREN bool_exp RPAREN LBRACE stmts RBRACE{
           $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
-          $$ -> type = 2; // type = 2 for while
+          $$ -> type = 2; // type = 2 for while 
           sprintf($$ -> InitCode,"%s", $3 -> code);
           sprintf($$ -> JumpCode, "beqz $t0,"); // Branch if the value computed at bool_exp(t0) is 1. Where to, we will decide labels later
           $$ -> while_body = $6;
@@ -343,6 +347,20 @@ while_stmt:
           $$ -> else_body = NULL;
           }
           ;
+
+for_stmt:
+        FOR LPAREN assign_stmt SEMICOLON bool_exp SEMICOLON assign_stmt SEMICOLON RPAREN LBRACE stmts RBRACE{
+          $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
+          $$ -> type = 6; // type = 6 for for
+          sprintf($$ -> InitCode,"%s\n", $5 -> code);
+          sprintf($$ -> JumpCode, "beqz $t0,"); // Branch if the value computed at bool_exp(t0) is 1. Where to, we will decide labels later
+          $$ -> while_body = $11;
+          strcpy($$ -> forStart, $3 -> assgnCode);
+          strcpy($$ -> forEnd, $7 -> assgnCode);
+          $$ -> if_body = NULL;
+          $$ -> else_body = NULL;
+        }
+        ;
 
 // t0 will store the computed value
 bool_exp:
@@ -517,6 +535,19 @@ void StmtTrav(stmtptr ptr){
         fprintf(fp, "%s \n", ptr->InitCode);
         fprintf(fp, "%s End%d\n", ptr->JumpCode, nj);
         StmtsTrav(ptr -> while_body);
+        fprintf(fp, "j While%d\nEnd%d:\n", ws, nj);
+    }
+    else if(ptr -> type == 6){
+        ws = whileStart;
+        whileStart++;
+        nj = End;
+        End++;
+        fprintf(fp, "%s \n", ptr->forStart);
+        fprintf(fp, "While%d:\n", ws);
+        fprintf(fp, "%s \n", ptr->InitCode);
+        fprintf(fp, "%s End%d\n", ptr->JumpCode, nj);
+        StmtsTrav(ptr -> while_body);
+        fprintf(fp, "%s \n", ptr->forEnd);
         fprintf(fp, "j While%d\nEnd%d:\n", ws, nj);
     }
     else if(ptr -> type == 3){
