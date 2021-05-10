@@ -14,5 +14,5 @@ f(n){
     return a;
 }
 
-x = f(2);
+x = f(7);
 print(x);
