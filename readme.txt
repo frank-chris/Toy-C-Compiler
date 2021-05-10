@@ -158,6 +158,16 @@ while(a > 10)
     a = a - 1;
 }
 
+* do while 
+
+Example:
+
+a = 10;
+do
+{
+    a = a - 1;
+}while(a > 10)
+
 ### Conditional - if else
 
 If else and its nested variant is supported.
@@ -213,15 +223,34 @@ d = b[2] + 3;   // d = 30
 
 ### Functions (recursion allowed)
 
-Functions and recursive functions are supported.
+Functions and recursive functions are supported. Parameters and return values also supported.
 
 * Function Declaration
 
 Example:
 
+f(n){
+    start       // start declaring local variables
+    a = 1;
+    b = 0;
+    end         // stop declaring local variables
+    if(n == 1){
+        a = 1;
+    }
+    else{
+        b = n - 1;
+        b = f(b);
+        a = b * n;
+    }
+    return a;
+}
+
 * Function Call
 
-Example:
+Example for function call based on declaration shown above:
+
+x = f(5);   // x = 5! = 120
+print(x);
 
 ### Output - print
 

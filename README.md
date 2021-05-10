@@ -136,7 +136,7 @@ d = a | b;       // true
 e = a ^ c;       // true
 ```
 
-### Loops - for, while
+### Loops - for, while, do while
 
 For and while loops and their nested variants are supported.
 
@@ -158,6 +158,16 @@ while(a > 10)
 {
     a = a - 1;
 }
+```
+
+#### while
+
+```C
+a = 10;
+do
+{
+    a = a - 1;
+}while(a > 10)
 ```
 
 ### Conditional - if else
@@ -212,15 +222,32 @@ d = b[2] + 3;   // d = 30
 ```
 
 ### Functions (recursion allowed)
-Functions and recursive functions are supported.
+Functions and recursive functions are supported. Parameters and return values also supported.
 #### Function Declaration
 ```C
-
+f(n){
+    start       // start declaring local variables
+    a = 1;
+    b = 0;
+    end         // stop declaring local variables
+    if(n == 1){
+        a = 1;
+    }
+    else{
+        b = n - 1;
+        b = f(b);
+        a = b * n;
+    }
+    return a;
+}
 ```
 
 #### Function Call
-```C
 
+Example for function call based on declaration shown above.
+```C
+x = f(5);   // x = 5! = 120
+print(x);
 ```
 
 ### Output - print
