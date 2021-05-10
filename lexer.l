@@ -24,6 +24,7 @@ id {letter}({letter}|{digit})*
 "else" {printf("ELSE\n"); return ELSE;}
 "for" {printf("FOR\n"); return FOR;}
 "while" {printf("WHILE\n"); return WHILE;}
+"do" {printf("DO\n"); return DO;}
 "true" {printf("TRUE\n"); return TRUE;}
 "false" {printf("FALSE\n"); return FALSE;}
 "scan" {printf("SCAN\n"); return SCAN;}

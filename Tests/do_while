@@ -1,0 +1,7 @@
+x = 1;
+y = 50 * x;
+do{
+    x = x * 2;
+    print(x);
+}while(y > x)
+

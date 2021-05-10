@@ -38,7 +38,7 @@ struct StmtsNode *stmtsptr;
 
 %token LBRACE RBRACE LPAREN RPAREN LBRACK RBRACK
 %token TRUE FALSE
-%token  WHILE IF ELSE FOR
+%token  DO WHILE IF ELSE FOR
 %token SCAN PRINT
 %token SEMICOLON COMMA
 %token ASSIGN DEFINE
@@ -378,6 +378,16 @@ while_stmt:
           sprintf($$ -> InitCode,"%s", $3 -> code);
           sprintf($$ -> JumpCode, "beqz $t0,"); // Branch if the value computed at bool_exp(t0) is 1. Where to, we will decide labels later
           $$ -> while_body = $6;
+          $$ -> if_body = NULL;
+          $$ -> else_body = NULL;
+          }
+          |
+          DO LBRACE stmts RBRACE WHILE LPAREN bool_exp RPAREN{
+          $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
+          $$ -> type = 2; // type = 2 for while 
+          sprintf($$ -> InitCode,"%s", $7 -> code);
+          sprintf($$ -> JumpCode, "beqz $t0,"); // Branch if the value computed at bool_exp(t0) is 1. Where to, we will decide labels later
+          $$ -> while_body = $3;
           $$ -> if_body = NULL;
           $$ -> else_body = NULL;
           }
