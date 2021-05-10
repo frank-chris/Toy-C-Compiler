@@ -250,6 +250,23 @@ x = f(5);   // x = 5! = 120
 print(x);
 ```
 
+### Function scope
+
+Example:
+
+```C
+n = 20;
+f(n){
+    start       // start declaring local variables
+    a = 1;
+    end         // stop declaring local variables
+    print(n);   // prints 40, not 20
+    return a;
+}
+
+x = f(40);
+```
+
 ### Output - print
 Printing expressions is supported.
 ```C
