@@ -49,11 +49,11 @@ id {letter}({letter}|{digit})*
 "|" {printf("OR\n"); yylval.logical_type=8; return LOGICAL;}
 "^" {printf("XOR\n"); yylval.logical_type=9; return LOGICAL;}
 
-"+" {printf("PLUS\n"); yylval.arithmetic_type=10; return ARITHMETIC;}
-"-" {printf("MINUS\n"); yylval.arithmetic_type=11; return ARITHMETIC;}
-"*" {printf("TIMES\n"); yylval.arithmetic_type=12; return ARITHMETIC;}
-"/" {printf("DIVIDE\n"); yylval.arithmetic_type=13; return ARITHMETIC;}
-"%" {printf("MODULUS\n"); yylval.arithmetic_type=14; return ARITHMETIC;}
+"+" {printf("PLUS\n"); yylval.arithmetic_type=10; return PLUS;}
+"-" {printf("MINUS\n"); yylval.arithmetic_type=11; return MINUS;}
+"*" {printf("TIMES\n"); yylval.arithmetic_type=12; return TIMES;}
+"/" {printf("DIVIDE\n"); yylval.arithmetic_type=13; return DIVIDE;}
+"%" {printf("MODULUS\n"); yylval.arithmetic_type=14; return MODULUS;}
 
 [ \n\t] {}
 . {printf("error:Character %s\n",yytext);exit(0);}

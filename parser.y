@@ -43,12 +43,11 @@ struct StmtsNode *stmtsptr;
 %token SEMICOLON COMMA
 %token ASSIGN DEFINE
 %token AND OR
-%token PLUS MINUS TIMES DIVIDE
 %token START END RETURN
 %token  <val> NUM        /* Integer   */
 %token <relational_type> RELATIONAL
 %token <logical_type> LOGICAL
-%token <arithmetic_type> ARITHMETIC
+%token <arithmetic_type> PLUS MINUS TIMES DIVIDE MODULUS
 %token <var> VAR
 %type <Code> local_variable_decl p_list return_st
 %type <smallCode> local_decl 
@@ -409,7 +408,31 @@ exp:
    $$ -> val = $2 -> val;
    }
    |
-   exp ARITHMETIC exp{
+   exp PLUS exp{
+   $$ = (exptable *)malloc(sizeof(exptable));
+   sprintf($$ -> code, "%s", gen_code($1 -> code, $3 -> code, $2));
+   $$ -> val  = compute_expr($1 -> val, $3 -> val, $2);
+   }
+   |
+   exp MINUS exp{
+   $$ = (exptable *)malloc(sizeof(exptable));
+   sprintf($$ -> code, "%s", gen_code($1 -> code, $3 -> code, $2));
+   $$ -> val  = compute_expr($1 -> val, $3 -> val, $2);
+   }
+   |
+   exp TIMES exp{
+   $$ = (exptable *)malloc(sizeof(exptable));
+   sprintf($$ -> code, "%s", gen_code($1 -> code, $3 -> code, $2));
+   $$ -> val  = compute_expr($1 -> val, $3 -> val, $2);
+   }
+   |
+   exp DIVIDE exp{
+   $$ = (exptable *)malloc(sizeof(exptable));
+   sprintf($$ -> code, "%s", gen_code($1 -> code, $3 -> code, $2));
+   $$ -> val  = compute_expr($1 -> val, $3 -> val, $2);
+   }
+   |
+   exp MODULUS exp{
    $$ = (exptable *)malloc(sizeof(exptable));
    sprintf($$ -> code, "%s", gen_code($1 -> code, $3 -> code, $2));
    $$ -> val  = compute_expr($1 -> val, $3 -> val, $2);
