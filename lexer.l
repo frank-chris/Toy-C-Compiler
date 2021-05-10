@@ -24,14 +24,20 @@ id {letter}({letter}|{digit})*
 "else" {printf("ELSE\n"); return ELSE;}
 "for" {printf("FOR\n"); return FOR;}
 "while" {printf("WHILE\n"); return WHILE;}
+"do" {printf("DO\n"); return DO;}
 "true" {printf("TRUE\n"); return TRUE;}
 "false" {printf("FALSE\n"); return FALSE;}
 "scan" {printf("SCAN\n"); return SCAN;}
 "print" {printf("PRINT\n"); return PRINT;}
-{id} {printf("ID\n"); symrec *s; s = getsym(yytext); if(s == 0) s = putsym(yytext); yylval.tptr = s; return VAR;}
+"start" {printf("START\n"); return START;}
+"end" {printf("END\n"); return END;}
+"return" {printf("RETURN"); return RETURN;}
+"label" {printf("LABEL\n"); return LABEL;}
+"goto" {printf("GOTO\n"); return GOTO;}
+{id} {printf("ID\n"); sprintf(yylval.var, "%s", yytext); return VAR;}
 {number} {printf("NUM\n"); sscanf(yytext,"%d",&yylval.val); return NUM;}
 ";" {printf("SEMICOLON\n"); return SEMICOLON;}
-":=" {printf("DEFINE\n"); return DEFINE;}
+"," {printf("COMMA\n"); return COMMA;}
 "=" {printf("ASSIGN\n"); return ASSIGN;}
 
 "<"   {printf("LT\n"); yylval.relational_type=1; return RELATIONAL;}
@@ -45,11 +51,11 @@ id {letter}({letter}|{digit})*
 "|" {printf("OR\n"); yylval.logical_type=8; return LOGICAL;}
 "^" {printf("XOR\n"); yylval.logical_type=9; return LOGICAL;}
 
-"+" {printf("PLUS\n"); yylval.arithmetic_type=10; return ARITHMETIC;}
-"-" {printf("MINUS\n"); yylval.arithmetic_type=11; return ARITHMETIC;}
-"*" {printf("TIMES\n"); yylval.arithmetic_type=12; return ARITHMETIC;}
-"/" {printf("DIVIDE\n"); yylval.arithmetic_type=13; return ARITHMETIC;}
-"%" {printf("MODULUS\n"); yylval.arithmetic_type=14; return ARITHMETIC;}
+"+" {printf("PLUS\n"); yylval.arithmetic_type=10; return PLUS;}
+"-" {printf("MINUS\n"); yylval.arithmetic_type=11; return MINUS;}
+"*" {printf("TIMES\n"); yylval.arithmetic_type=12; return TIMES;}
+"/" {printf("DIVIDE\n"); yylval.arithmetic_type=13; return DIVIDE;}
+"%" {printf("MODULUS\n"); yylval.arithmetic_type=14; return MODULUS;}
 
 [ \n\t] {}
 . {printf("error:Character %s\n",yytext);exit(0);}

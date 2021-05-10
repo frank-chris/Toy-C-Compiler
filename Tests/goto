@@ -1,0 +1,6 @@
+while(2 < 3){
+    print(4);
+    goto here;
+}
+label here;
+print(2);

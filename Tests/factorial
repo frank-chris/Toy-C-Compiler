@@ -1,0 +1,19 @@
+f(n){
+    start
+    a = 1;
+    b = 0;
+    end
+    if(n == 1){
+        a = 1;
+    }
+    else{
+        b = n - 1;
+        b = f(b);
+        a = b * n;
+    }
+    return a;
+}
+
+scan(inp);
+x = f(inp);
+print(x);

@@ -1,4 +1,5 @@
 scan(a);
-scan(b);
+b = a;
 scan(c);
 print((a + b) * c);
+print(b);

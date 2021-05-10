@@ -1,0 +1,17 @@
+g(x){
+    start
+    end
+    print(1);
+    return 2 + x;
+}
+
+f(a){
+    start
+    end
+    a = g(a);
+    return a * 2;
+}
+
+
+z = f(3);
+print(z);

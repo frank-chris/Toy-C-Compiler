@@ -58,29 +58,38 @@ char *gen_code(char *code1, char *code2, int opt){
     int l2 = strlen(code2);
     char *code = (char *)malloc(2000 * sizeof(char)); // We can calculate this
 
-    sprintf(code, "%s\n", code1); // All instructions to load the first expression into t0
 
-    // Now store the value in t0 into the stack
+    if(func == 0){
+        sprintf(code, "%s\n", code1); // All instructions to load the first expression into t0
 
-    // Decrement the stack pointer by 4
-    sprintf(code, "%s%s\n", code, "subu $sp, $sp, 4");
-    // Store t0 here
-    sprintf(code, "%s%s\n", code, "sw $t0 4($sp)");
+        // Now store the value in t0 into the stack
 
-    sprintf(code, "%s%s\n", code, code2); // All instructions to load the second expression into t0
+        // Decrement the stack pointer by 4
+        sprintf(code, "%s%s\n", code, "subu $sp, $sp, 4");
+        // Store t0 here
+        sprintf(code, "%s%s\n", code, "sw $t0 ($sp)");
 
-    // Repeat steps
-    sprintf(code, "%s%s\n", code, "subu $sp, $sp, 4");
-    sprintf(code, "%s%s\n", code, "sw $t0 4($sp)");
+        sprintf(code, "%s%s\n", code, code2); // All instructions to load the second expression into t0
 
-    // Load expression2 into t1 and expression1 into t0
-    sprintf(code, "%s%s\n", code, "lw $t1 4($sp)");
-    sprintf(code, "%s%s\n", code, "addi $sp, $sp, 4");
-    sprintf(code, "%s%s\n", code, "lw $t0 4($sp)");
-    sprintf(code, "%s%s\n", code, "addi $sp, $sp, 4");
+        // Repeat steps
+        sprintf(code, "%s%s\n", code, "subu $sp, $sp, 4");
+        sprintf(code, "%s%s\n", code, "sw $t0 ($sp)");
 
-    // Finally, store result into t0
-    sprintf(code, "%s%s %s\n", code, op_code, "$t0, $t0, $t1");
+        // Load expression2 into t1 and expression1 into t0
+        sprintf(code, "%s%s\n", code, "lw $t1 ($sp)");
+        sprintf(code, "%s%s\n", code, "addi $sp, $sp, 4");
+        sprintf(code, "%s%s\n", code, "lw $t0 ($sp)");
+        sprintf(code, "%s%s\n", code, "addi $sp, $sp, 4");
+
+        // Finally, store result into t0
+        sprintf(code, "%s%s %s\n", code, op_code, "$t0, $t0, $t1");
+    }
+    else{
+        sprintf(code, "%s%s\n", code, code2); // All instructions to load the second expression into t0
+        sprintf(code, "%s%s\n", code, "move $t1, $t0");
+        sprintf(code, "%s%s\n", code, code1); 
+        sprintf(code, "%s%s %s\n", code, op_code, "$t0, $t0, $t1");
+    }
 
     return code;
 }
@@ -89,6 +98,7 @@ char *gen_code(char *code1, char *code2, int opt){
 int compute_expr(int exp1, int exp2, int opt){
 
     int ans; // stores the result of the expression
+    fflush(stdout);
     switch(opt){
         case 1:
             ans = (exp1 < exp2);
@@ -127,10 +137,20 @@ int compute_expr(int exp1, int exp2, int opt){
             ans = (exp1 * exp2);
             break;
         case 13:
-            ans = (exp1 / exp2);
+            if(exp2 == 0){
+                printf("Division by 0\n");
+                fflush(stdout);
+            }
+            else
+                ans = (exp1 / exp2);
             break;
         case 14:
-            ans = (exp1 % exp2);
+            if(exp2 == 0){
+                printf("Modulus by 0\n");
+                fflush(stdout);
+            }
+            else
+                ans = (exp1 % exp2);
             break;
     }
 
