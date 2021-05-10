@@ -31,11 +31,12 @@ id {letter}({letter}|{digit})*
 "start" {printf("START\n"); return START;}
 "end" {printf("END\n"); return END;}
 "return" {printf("RETURN"); return RETURN;}
+"label" {printf("LABEL\n"); return LABEL;}
+"goto" {printf("GOTO\n"); return GOTO;}
 {id} {printf("ID\n"); sprintf(yylval.var, "%s", yytext); return VAR;}
 {number} {printf("NUM\n"); sscanf(yytext,"%d",&yylval.val); return NUM;}
 ";" {printf("SEMICOLON\n"); return SEMICOLON;}
 "," {printf("COMMA\n"); return COMMA;}
-":=" {printf("DEFINE\n"); return DEFINE;}
 "=" {printf("ASSIGN\n"); return ASSIGN;}
 
 "<"   {printf("LT\n"); yylval.relational_type=1; return RELATIONAL;}

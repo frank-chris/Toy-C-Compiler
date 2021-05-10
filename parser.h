@@ -75,6 +75,7 @@ struct StmtNode{
    char funCode[1000];
    char forStart[1000];
    char forEnd[1000];
+   char simpleCode[1000];
    struct StmtsNode *while_body;
    struct StmtsNode *if_body;
    struct StmtsNode *else_body;

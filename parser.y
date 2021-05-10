@@ -44,6 +44,7 @@ struct StmtsNode *stmtsptr;
 %token ASSIGN DEFINE
 %token AND OR
 %token START END RETURN
+%token LABEL GOTO
 %token  <val> NUM        /* Integer   */
 %token <relational_type> RELATIONAL
 %token <logical_type> LOGICAL
@@ -54,7 +55,7 @@ struct StmtsNode *stmtsptr;
 %type  <expptr>  exp bool_exp x
 %type <stmtsptr> stmts 
 %type <stmtptr> stmt
-%type <stmtptr> array_decl assign_stmt print_stmt scan_stmt if_stmt while_stmt function_decl for_stmt
+%type <stmtptr> array_decl assign_stmt print_stmt scan_stmt if_stmt while_stmt function_decl for_stmt label_stmt goto_stmt
 
 %right ASSIGN
 %left MINUS PLUS
@@ -102,6 +103,14 @@ stmt:
     }
     |
     assign_stmt SEMICOLON{
+    $$ = $1;
+    }
+    |
+    label_stmt SEMICOLON{
+    $$ = $1;
+    }
+    |
+    goto_stmt SEMICOLON{
     $$ = $1;
     }
     |
@@ -296,6 +305,23 @@ assign_stmt:
            yyerrok;
            }
            ;
+
+
+label_stmt:
+          LABEL VAR{
+         $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
+          strcpy($$ -> simpleCode, $2);
+          strcat($$ -> simpleCode, ":\n");
+          $$ -> type = 7;
+          }
+          ;
+
+goto_stmt:
+         GOTO VAR{
+         $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
+         sprintf($$ -> simpleCode, "j %s\n", $2);
+          $$ -> type = 7;
+         }
 
 scan_stmt:
          SCAN LPAREN VAR RPAREN{
@@ -587,6 +613,9 @@ void StmtTrav(stmtptr ptr){
         StmtsTrav(ptr -> func_body);
         fprintf(fp, "%s \n", ptr -> ReturnCode);
         fprintf(fp, "End%d:\n", fn);
+    }
+    else if(ptr -> type == 7){
+        fprintf(fp, "%s \n", ptr -> simpleCode);
     }
 }
 
