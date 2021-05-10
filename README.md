@@ -160,7 +160,7 @@ while(a > 10)
 }
 ```
 
-#### while
+#### do while
 
 ```C
 a = 10;
