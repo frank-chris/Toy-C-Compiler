@@ -1,0 +1,20 @@
+fib(n){
+    start
+    ans = 0;
+    a1 = 0;
+    a2 = 0;
+    end
+    if(n <= 1){
+        ans = n;
+    }
+    else{
+        a1 = fib(n - 1);
+        a2 = fib(n - 2);
+        ans = a1 + a2;
+    }
+    return ans;
+}
+
+scan(x);
+z = fib(x);
+print(z);
