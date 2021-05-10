@@ -7,7 +7,7 @@
 
 int whileStart = 0, End = 0, elseStart = 0;
 int count = 0;
-int position = 0;
+int plist = 0;
 symrec *sptr;
 symrec *cur_table;
 funcrec *fptr;
@@ -150,6 +150,7 @@ function_decl:
         fptr -> local_vars = 0;
         }
         START local_variable_decl END{
+        func_table = putfunc(fptr);
         }
         stmts return_st RBRACE{
 
@@ -160,9 +161,8 @@ function_decl:
         cur_table = sym_table;
         $$ -> func_body = $13;
         sprintf($$ -> ReturnCode, "%s", $14);
-        printf("\nReturn Code\n%s\n\n", $$ -> ReturnCode);
+        //printf("\nReturn Code\n%s\n\n", $$ -> ReturnCode);
 
-        func_table = putfunc(fptr);
 
         func = 0;
         }
@@ -170,7 +170,7 @@ function_decl:
 
 return_st:
          RETURN exp SEMICOLON{
-         printf("\n\nRETURN CODE IS HERE\n%s\n\n", $2 -> code);
+         //printf("\n\nRETURN CODE IS HERE\n%s\n\n", $2 -> code);
          strcpy($$, $2 -> code);
          /*
          We have computed return value into t0
@@ -255,6 +255,7 @@ assign_stmt:
            else{
                int tot_vars = fptr -> params + fptr -> local_vars;
                int faddr = (tot_vars * 4) - atoi(sptr -> addr);
+               printf("addrs is %d\n", faddr + 4);
                sprintf($$ -> assgnCode, "%ssw $t0,%d($sp)\n", $3 -> code, faddr + 4); // $3 will be t0, its value will be stored at the address(mem location) of the variable.
            }
            sptr -> val  = $3 -> val;
@@ -379,7 +380,7 @@ exp:
    x{
    $$ = (exptable *)malloc(sizeof(exptable));
    sprintf($$ -> code, "%s", $1 -> code);
-   printf("\n\nX is \n%s\n\n", $$ -> code);
+   //printf("\n\nX is \n%s\n\n", $$ -> code);
    $$ -> val = $1 -> val;
    count ^= 1;
    }
@@ -436,15 +437,25 @@ x:
  else{
      int tot_vars = fptr -> params + fptr -> local_vars;
      int faddr = (tot_vars * 4) - atoi(sptr -> addr);
-     sprintf($$ -> code, "lw $t0, %d($sp)\n", faddr + 4);
+     if(func == 1 && plist == 1)
+         sprintf($$ -> code, "lw $t0, %d($sp)\n", faddr + 8);
+     else
+         sprintf($$ -> code, "lw $t0, %d($sp)\n", faddr + 4);
  }
  $$ -> val = sptr -> val;
  }
  |
- VAR LPAREN p_list RPAREN{
+ VAR LPAREN
+ {
+ plist = 1;
+ }
+ p_list RPAREN{
  funcrec *fptr_local = getfunc($1);
+ printf("FPTR: %p\n", fptr_local);
+ fflush(stdout);
  $$ = (exptable *)malloc(sizeof(exptable));
- sprintf($$ -> code, "\nsubu $sp, $sp, 4\n %s \njal func%d\n", $3, fptr_local -> fnum);
+ sprintf($$ -> code, "\nsubu $sp, $sp, 4\n %s \njal func%d\n", $4, fptr_local -> fnum);
+ plist = 0;
  // First subu is for storing the return address
  }
  ;
@@ -478,7 +489,7 @@ void StmtsTrav(stmtsptr ptr){
 }
 
 void StmtTrav(stmtptr ptr){
-    int ws, nj, es;
+    int ws, nj, es, fn;
     printf("stmt\n");
     if(ptr == NULL) return;
  
@@ -491,7 +502,7 @@ void StmtTrav(stmtptr ptr){
         nj = End;
         End++;
         fprintf(fp, "%s \n", ptr->InitCode);
-        fprintf(fp, "%s Else%d\n", ptr->JumpCode, nj);
+        fprintf(fp, "%s Else%d\n", ptr->JumpCode, es);
         StmtsTrav(ptr -> if_body);
         fprintf(fp, "j End%d\nElse%d:\n", nj, es);
         StmtsTrav(ptr -> else_body);
@@ -515,13 +526,13 @@ void StmtTrav(stmtptr ptr){
         fprintf(fp, "%s\n",ptr -> scanCode);
     }
     else if(ptr -> type == 5){
-        nj = End;
+        fn = End;
         End++;
-        fprintf(fp, "\n\nj End%d\n", nj);
+        fprintf(fp, "\n\nj End%d\n", fn);
         fprintf(fp, "%s \n", ptr -> funCode);
         StmtsTrav(ptr -> func_body);
         fprintf(fp, "%s \n", ptr -> ReturnCode);
-        fprintf(fp, "End%d:\n", nj);
+        fprintf(fp, "End%d:\n", fn);
     }
 }
 

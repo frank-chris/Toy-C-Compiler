@@ -1,15 +1,18 @@
-f(num){
+f(n){
     start
-    ans = 1;
-    end;
-    if(num == 1){
-        ans = 1;
+    a = 1;
+    b = 0;
+    end
+    if(n == 1){
+        a = 1;
     }
     else{
-        ans = ans * f(num - 1);
+        b = n - 1;
+        b = f(b);
+        a = b * n;
     }
-    return ans;
+    return a;
 }
 
-x = f(4);
+x = f(2);
 print(x);

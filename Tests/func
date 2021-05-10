@@ -1,27 +1,17 @@
-f(a, b){
-    start
-    c = 0;
-    d = 5;
-    end
-    a = a;
-    b = b;
-    c = a + b;
-    if(c > 5){
-        print(10);
-    }
-    else{
-        print(100);
-    }
-    print(c);
-    return d * 2;
-}
-
-g(x, y){
+g(x){
     start
     end
     print(1);
     return 2 + 2;
 }
 
-z = f(3, 4);
+f(a){
+    start
+    end
+    a = g(a);
+    return a * 2;
+}
+
+
+z = f(3);
 print(z);
