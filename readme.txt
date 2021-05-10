@@ -132,11 +132,11 @@ a = false;
 b = true;
 c = a & b;       // false
 d = a | b;       // true
-e = a ^ c;       // true
+e = a ^ c;       // false
 
 ### Loops - for, while
 
-For and while loops and their nested variants are supported.
+For, while and do while loops and their nested variants are supported.
 
 * for
 
