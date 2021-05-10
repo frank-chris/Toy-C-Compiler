@@ -359,6 +359,16 @@ if_stmt:
        $$ -> if_body = $6;
        $$ -> else_body = $10;
        }
+       |
+       IF LPAREN bool_exp RPAREN LBRACE stmts RBRACE{
+       $$ = (struct StmtNode *) malloc(sizeof(struct StmtNode));
+       $$ -> type = 1; // type = 1 for if else
+       sprintf($$ -> InitCode,"%s", $3 -> code);
+       sprintf($$ -> JumpCode, "beqz $t0,"); // Branch to else part
+       $$ -> while_body = NULL;
+       $$ -> if_body = $6;
+       $$ -> else_body = NULL;
+       }
        ;
 
 while_stmt:
