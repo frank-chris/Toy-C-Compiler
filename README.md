@@ -11,7 +11,7 @@ This project has been made as a course project in the course CS-327: Compilers o
 ## Table of Contents 📃
 
 **[Requirements](#requirements-)**<br>
-**[Compiling and Cleaning](#compiling-and-cleaning-)**<br>
+**[Compiling and Cleaning](#compiling-and-cleaning-%EF%B8%8F)**<br>
 **[Usage](#usage-)**<br>
 **[Features](#features-)**<br>
 **[Files and Folders](#files-and-folders-)**<br>
@@ -203,14 +203,14 @@ scan(a);
 
 ## Files and Folders 📁
 
-[`lexer.l`](lexer.l) - lexer  
-[`parser.y`](parser.y) - parser     
-[`parser.h`](parser.h) - header file  
-[`expressions.c`](expressions.c) - code generation for expressions  
-[`sym_operations.c`](sym_operations.c) - definitions of functions that use the symbol table  
-[`func_operations.c`](func_operations.c) - definitions of functions that use the function table  
-[`Makefile`](Makefile) - Makefile  
-[`Tests`](Tests) - Folder containing test files  
+[`lexer.l`](https://github.com/frank-chris/Compilers-Project/blob/main/lexer.l) - lexer  
+[`parser.y`](https://github.com/frank-chris/Compilers-Project/blob/main/parser.y) - parser     
+[`parser.h`](https://github.com/frank-chris/Compilers-Project/blob/main/parser.h) - header file  
+[`expressions.c`](https://github.com/frank-chris/Compilers-Project/blob/main/expressions.c) - code generation for expressions  
+[`sym_operations.c`](https://github.com/frank-chris/Compilers-Project/blob/main/sym_operations.c) - definitions of functions that use the symbol table  
+[`func_operations.c`](https://github.com/frank-chris/Compilers-Project/blob/main/func_operations.c) - definitions of functions that use the function table  
+[`Makefile`](https://github.com/frank-chris/Compilers-Project/blob/main/Makefile) - Makefile  
+[`Tests`](https://github.com/frank-chris/Compilers-Project/tree/main/Tests) - Folder containing test files  
 
 
 
