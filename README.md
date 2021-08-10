@@ -283,14 +283,14 @@ scan(a);    // takes input into a
 
 ## Files and Folders 📁
 
-[`lexer.l`](https://github.com/frank-chris/Compilers-Project/blob/main/lexer.l) - lexer  
-[`parser.y`](https://github.com/frank-chris/Compilers-Project/blob/main/parser.y) - parser     
-[`parser.h`](https://github.com/frank-chris/Compilers-Project/blob/main/parser.h) - header file  
-[`expressions.c`](https://github.com/frank-chris/Compilers-Project/blob/main/expressions.c) - code generation for expressions  
-[`sym_operations.c`](https://github.com/frank-chris/Compilers-Project/blob/main/sym_operations.c) - definitions of functions that use the symbol table  
-[`func_operations.c`](https://github.com/frank-chris/Compilers-Project/blob/main/func_operations.c) - definitions of functions that use the function table  
-[`Makefile`](https://github.com/frank-chris/Compilers-Project/blob/main/Makefile) - Makefile  
-[`Tests`](https://github.com/frank-chris/Compilers-Project/tree/main/Tests) - Folder containing test files  
+[`lexer.l`](https://github.com/frank-chris/Toy-C-Compiler/blob/main/lexer.l) - lexer  
+[`parser.y`](https://github.com/frank-chris/Toy-C-Compiler/blob/main/parser.y) - parser     
+[`parser.h`](https://github.com/frank-chris/Toy-C-Compiler/blob/main/parser.h) - header file  
+[`expressions.c`](https://github.com/frank-chris/Toy-C-Compiler/blob/main/expressions.c) - code generation for expressions  
+[`sym_operations.c`](https://github.com/frank-chris/Toy-C-Compiler/blob/main/sym_operations.c) - definitions of functions that use the symbol table  
+[`func_operations.c`](https://github.com/frank-chris/Toy-C-Compiler/blob/main/func_operations.c) - definitions of functions that use the function table  
+[`Makefile`](https://github.com/frank-chris/Toy-C-Compiler/blob/main/Makefile) - Makefile  
+[`Tests`](https://github.com/frank-chris/Toy-C-Compiler/tree/main/Tests) - Folder containing test files  
 
 
 
